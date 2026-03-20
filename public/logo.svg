@@ -1,0 +1,12 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="240" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d9eaff"/>
+      <stop offset="1" stop-color="#2f79f7"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="192" height="192" rx="52" fill="url(#g1)"/>
+  <path d="M76 108L120 90L164 108V142L120 160L76 142V108Z" stroke="#12366B" stroke-width="10" fill="white"/>
+  <path d="M120 72L132 95H108L120 72Z" fill="#F97316"/>
+  <text x="120" y="186" text-anchor="middle" font-size="34" font-family="Arial, sans-serif" font-weight="700" fill="#0f2d66">DMPS</text>
+</svg>

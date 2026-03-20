@@ -1,0 +1,65 @@
+[
+  {
+    "id": "notice-1",
+    "title": "Morning Assembly Theme",
+    "content": "This week focuses on discipline and teamwork. Students should prepare short reflections.",
+    "date": "2026-03-21",
+    "type": "daily"
+  },
+  {
+    "id": "notice-2",
+    "title": "Holiday Announcement",
+    "content": "School will remain closed on 2026-03-25 for regional festivities.",
+    "date": "2026-03-20",
+    "type": "holiday"
+  },
+  {
+    "id": "notice-3",
+    "title": "Important: ID Card Reissue Deadline",
+    "content": "All students must submit ID card reissue forms by 2026-03-28. Late applications incur a fee.",
+    "date": "2026-03-19",
+    "type": "alert"
+  },
+  {
+    "id": "notice-4",
+    "title": "Daily Update: House Practice",
+    "content": "Inter-house drill practice for classes 6-10 will be held from 1:30 PM in the main ground.",
+    "date": "2026-03-22",
+    "type": "daily"
+  },
+  {
+    "id": "notice-5",
+    "title": "Daily Update: Uniform Check",
+    "content": "Students are requested to wear complete summer uniform from Monday, 2026-03-30.",
+    "date": "2026-03-23",
+    "type": "daily"
+  },
+  {
+    "id": "notice-6",
+    "title": "Holiday: Ram Navami",
+    "content": "School will remain closed on 2026-04-05 on account of Ram Navami.",
+    "date": "2026-03-24",
+    "type": "holiday"
+  },
+  {
+    "id": "notice-7",
+    "title": "Holiday: Good Friday",
+    "content": "School will remain closed on 2026-04-03. Regular classes resume on 2026-04-04.",
+    "date": "2026-03-25",
+    "type": "holiday"
+  },
+  {
+    "id": "notice-8",
+    "title": "Important Alert: Bus Route Revision",
+    "content": "Bus route numbers 4 and 7 are revised effective 2026-03-29. Parents should check transport circular.",
+    "date": "2026-03-26",
+    "type": "alert"
+  },
+  {
+    "id": "notice-9",
+    "title": "Important Alert: PTM Slot Booking",
+    "content": "Parents must book PTM slots before 2026-04-10 through the school office to avoid queue delays.",
+    "date": "2026-03-27",
+    "type": "alert"
+  }
+]

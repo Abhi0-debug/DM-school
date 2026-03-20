@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <linearGradient id="bg04" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F2D66"/>
+      <stop offset="1" stop-color="#2F79F7"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg04)"/>
+  <circle cx="160" cy="260" r="180" fill="#FFFFFF" opacity="0.12"/>
+  <circle cx="-160" cy="880" r="230" fill="#FFFFFF" opacity="0.1"/>
+  <rect x="220" y="230" width="1480" height="620" rx="40" fill="#FFFFFF" opacity="0.08"/>
+  <text x="960" y="510" text-anchor="middle" font-size="96" font-family="Arial, sans-serif" fill="#FFFFFF" font-weight="700">DM Public School</text>
+  <text x="960" y="605" text-anchor="middle" font-size="54" font-family="Arial, sans-serif" fill="#DCEBFF" font-weight="500">Shaping Future Leaders</text>
+  <text x="960" y="720" text-anchor="middle" font-size="44" font-family="Arial, sans-serif" fill="#C7DDFF">Dummy Hero Slide 04</text>
+</svg>

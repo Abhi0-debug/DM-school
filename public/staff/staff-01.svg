@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1100" viewBox="0 0 900 1100" fill="none">
+  <defs>
+    <linearGradient id="bg01" x1="0" y1="0" x2="900" y2="1100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E7F1FF"/>
+      <stop offset="1" stop-color="#C3DCFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="1100" fill="url(#bg01)"/>
+  <rect x="90" y="90" width="720" height="920" rx="48" fill="#FFFFFF" stroke="#2F79F7" stroke-width="8"/>
+  <circle cx="450" cy="360" r="170" fill="#2F79F7" opacity="0.18"/>
+  <circle cx="450" cy="320" r="92" fill="#2F79F7" opacity="0.33"/>
+  <rect x="282" y="430" width="524" height="160" rx="80" fill="#2F79F7" opacity="0.26"/>
+  <text x="450" y="700" text-anchor="middle" font-size="46" font-family="Arial, sans-serif" fill="#1D4CA9" font-weight="700">Anita Verma</text>
+  <text x="450" y="760" text-anchor="middle" font-size="34" font-family="Arial, sans-serif" fill="#1F5FD5">Mathematics</text>
+  <text x="450" y="835" text-anchor="middle" font-size="28" font-family="Arial, sans-serif" fill="#2F79F7">Dummy Staff Photo 01</text>
+</svg>

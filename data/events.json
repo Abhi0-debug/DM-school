@@ -1,0 +1,50 @@
+[
+  {
+    "id": "event-1",
+    "title": "Annual Science Exhibition",
+    "date": "2026-04-04",
+    "description": "Student-led projects showcasing practical innovations in robotics, sustainability, and physics.",
+    "location": "Main Auditorium",
+    "type": "event"
+  },
+  {
+    "id": "event-2",
+    "title": "Parent-Teacher Meeting",
+    "date": "2026-04-18",
+    "description": "Quarterly one-on-one progress review with class teachers and coordinators.",
+    "location": "Academic Block",
+    "type": "event"
+  },
+  {
+    "id": "event-3",
+    "title": "Inter-House Sports Day",
+    "date": "2026-05-02",
+    "description": "Track and field events with house-wise rankings and awards.",
+    "location": "School Ground",
+    "type": "event"
+  },
+  {
+    "id": "event-4",
+    "title": "Mid-Term Exam: Grades 6-8",
+    "date": "2026-05-12",
+    "description": "Mid-term written assessments for middle school sections.",
+    "location": "Exam Hall A",
+    "type": "exam"
+  },
+  {
+    "id": "event-5",
+    "title": "Mid-Term Exam: Grades 9-12",
+    "date": "2026-05-19",
+    "description": "Formal exam schedule for secondary and senior secondary students.",
+    "location": "Exam Hall B",
+    "type": "exam"
+  },
+  {
+    "id": "event-6",
+    "title": "Summer Art Camp",
+    "date": "2026-06-03",
+    "description": "Creative workshops for visual arts, pottery, and storytelling.",
+    "location": "Art Studio",
+    "type": "event"
+  }
+]
