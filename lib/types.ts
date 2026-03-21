@@ -20,6 +20,7 @@ export interface EventItem {
   date: string;
   description: string;
   location: string;
+  category: string;
   type: EventType;
 }
 

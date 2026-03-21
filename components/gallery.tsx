@@ -13,6 +13,7 @@ interface GalleryProps {
 export function Gallery({ initialImages }: GalleryProps) {
   const images = initialImages;
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (activeIndex === null || images.length === 0) {
@@ -70,14 +71,21 @@ export function Gallery({ initialImages }: GalleryProps) {
         </p>
       </div>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid auto-rows-[220px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {images.map((image, index) => (
           <button
             key={image.id}
             type="button"
             onClick={() => setActiveIndex(index)}
-            className="group relative h-52 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 text-left shadow-soft transition-all duration-300 hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-800"
+            className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 text-left shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-700 dark:bg-slate-800 ${
+              index === 0 || index === 5
+                ? "sm:col-span-2 sm:row-span-2"
+                : ""
+            }`}
           >
+            {!loadedImages[image.id] ? (
+              <div className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-700" />
+            ) : null}
             <Image
               src={image.url}
               alt={image.alt}
@@ -85,13 +93,21 @@ export function Gallery({ initialImages }: GalleryProps) {
               loading="lazy"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
               quality={80}
-              className="object-cover transition duration-500 group-hover:scale-105"
+              onLoad={() =>
+                setLoadedImages((current) => ({ ...current, [image.id]: true }))
+              }
+              className={`object-cover transition-all duration-300 group-hover:scale-105 group-hover:brightness-110 ${
+                loadedImages[image.id] ? "opacity-100" : "opacity-0"
+              }`}
             />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/80 to-transparent p-3 text-white">
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-200">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 p-4 text-white">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">
                 {image.category}
               </p>
-              <p className="line-clamp-1 text-sm">{image.alt}</p>
+              <p className="mt-1 line-clamp-2 text-base font-semibold sm:text-lg">
+                {image.alt}
+              </p>
             </div>
           </button>
         ))}
@@ -105,7 +121,7 @@ export function Gallery({ initialImages }: GalleryProps) {
 
       {activeImage ? (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/90 p-4"
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/95 p-4"
           onClick={() => setActiveIndex(null)}
         >
           <button
@@ -147,7 +163,7 @@ export function Gallery({ initialImages }: GalleryProps) {
 
           <div
             key={activeImage.id}
-            className="relative h-[70vh] w-full max-w-5xl overflow-hidden rounded-2xl"
+            className="relative h-[70vh] w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <Image

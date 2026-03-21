@@ -20,6 +20,7 @@ export const eventSchema = z.object({
   date: z.string().min(8),
   description: z.string().min(10),
   location: z.string().min(2),
+  category: z.string().min(2).optional(),
   type: z.enum(["event", "exam"])
 });
 
@@ -34,4 +35,23 @@ export const imageSchema = z.object({
   url: z.string().url(),
   alt: z.string().min(3),
   category: z.string().min(2)
+});
+
+export const reorderSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1)
+});
+
+export const adminPinLoginSchema = z.object({
+  pin: z.string().min(4).max(32)
+});
+
+export const adminPinChangeSchema = z.object({
+  currentPin: z.string().min(4).max(32),
+  newPin: z.string().min(4).max(32)
+});
+
+export const imageUpdateSchema = z.object({
+  alt: z.string().min(3),
+  category: z.string().min(2),
+  url: z.string().url().optional()
 });
