@@ -6,6 +6,15 @@ import { eventSchema, reorderSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
+export async function GET(request: NextRequest) {
+  if (!(await isAdminAuthorized(request))) {
+    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  }
+
+  const events = await readJsonFile<EventItem[]>("events.json", []);
+  return NextResponse.json({ events });
+}
+
 function normalizeCategory(type: EventItem["type"], category?: string) {
   if (category && category.trim().length > 0) {
     return category.trim();

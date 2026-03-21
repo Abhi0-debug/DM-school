@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { fallbackHeroSlides } from "@/lib/constants";
+import { getHeroSlides } from "@/lib/data";
 import { getDynamicHero } from "@/lib/media-provider";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const slides = await getDynamicHero(fallbackHeroSlides);
+  const configuredSlides = await getHeroSlides();
+  const slides = await getDynamicHero(configuredSlides);
   return NextResponse.json({ slides });
 }

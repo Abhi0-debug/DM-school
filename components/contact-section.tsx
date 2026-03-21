@@ -1,9 +1,10 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { SectionHeading } from "@/components/section-heading";
 import { siteConfig } from "@/lib/site-config";
+import { ContactSettings } from "@/lib/types";
 
 interface ContactFormState {
   name: string;
@@ -19,6 +20,8 @@ function getCaptchaChallenge() {
   return { a, b, expected: a + b };
 }
 
+const initialChallenge = { a: 1, b: 1, expected: 2 };
+
 const initialState: ContactFormState = {
   name: "",
   email: "",
@@ -29,11 +32,49 @@ const initialState: ContactFormState = {
 
 export function ContactSection() {
   const [form, setForm] = useState<ContactFormState>(initialState);
-  const [challenge, setChallenge] = useState(getCaptchaChallenge);
+  const [challenge, setChallenge] = useState(initialChallenge);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
   );
   const [message, setMessage] = useState("");
+  const [contactInfo, setContactInfo] = useState<ContactSettings>({
+    email: siteConfig.contact.email,
+    phone: siteConfig.contact.phone,
+    address: siteConfig.contact.address
+  });
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadContactSettings = async () => {
+      try {
+        const response = await fetch("/api/contact-settings", {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = (await response.json()) as { settings?: ContactSettings };
+        if (mounted && payload.settings) {
+          setContactInfo(payload.settings);
+        }
+      } catch {
+        // Keep static fallback from site config.
+      }
+    };
+
+    loadContactSettings();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    setChallenge(getCaptchaChallenge());
+  }, []);
 
   const canSubmit = useMemo(
     () =>
@@ -95,17 +136,17 @@ export function ContactSection() {
           <div className="mt-6 space-y-3">
             <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
               <p className="inline-flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                <Mail className="h-4 w-4 text-brand-600" /> {siteConfig.contact.email}
+                <Mail className="h-4 w-4 text-brand-600" /> {contactInfo.email}
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
               <p className="inline-flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                <Phone className="h-4 w-4 text-brand-600" /> {siteConfig.contact.phone}
+                <Phone className="h-4 w-4 text-brand-600" /> {contactInfo.phone}
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
               <p className="inline-flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-                <MapPin className="h-4 w-4 text-brand-600" /> {siteConfig.contact.address}
+                <MapPin className="h-4 w-4 text-brand-600" /> {contactInfo.address}
               </p>
             </div>
           </div>
