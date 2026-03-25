@@ -9,6 +9,15 @@ import { imageSchema, reorderSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
+export async function GET(request: NextRequest) {
+  if (!(await isAdminAuthorized(request))) {
+    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+  }
+
+  const images = await readJsonFile<GalleryImage[]>("gallery.json", []);
+  return NextResponse.json({ images });
+}
+
 function supportsCloudinaryUpload() {
   return Boolean(
     process.env.CLOUDINARY_CLOUD_NAME &&

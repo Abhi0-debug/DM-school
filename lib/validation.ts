@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+const assetUrlSchema = z
+  .string()
+  .min(2, "Asset URL is required.")
+  .refine(
+    (value) => value.startsWith("/") || /^https?:\/\//i.test(value),
+    "Enter a valid absolute URL or /uploads path."
+  );
+
 export const contactSchema = z.object({
   name: z.string().min(2, "Name should be at least 2 characters."),
   email: z.string().email("Enter a valid email address."),
@@ -32,7 +40,7 @@ export const noticeSchema = z.object({
 });
 
 export const imageSchema = z.object({
-  url: z.string().url(),
+  url: assetUrlSchema,
   alt: z.string().min(3),
   category: z.string().min(2)
 });
@@ -53,5 +61,34 @@ export const adminPinChangeSchema = z.object({
 export const imageUpdateSchema = z.object({
   alt: z.string().min(3),
   category: z.string().min(2),
-  url: z.string().url().optional()
+  url: assetUrlSchema.optional()
+});
+
+export const heroSlideSchema = z.object({
+  url: assetUrlSchema,
+  alt: z.string().min(3, "Slide alt text is too short.")
+});
+
+export const staffSchema = z.object({
+  name: z.string().min(2, "Teacher name should be at least 2 characters."),
+  subject: z.string().min(2, "Subject is required."),
+  bio: z.string().min(8, "Bio should be at least 8 characters."),
+  photo: assetUrlSchema
+});
+
+export const contactSettingsSchema = z.object({
+  email: z.string().email("Enter a valid contact email."),
+  phone: z
+    .string()
+    .regex(/^[+]?[0-9\s-]{8,16}$/, "Enter a valid contact phone number."),
+  address: z.string().min(6, "Address is too short.")
+});
+
+export const navConfigSchema = z.object({
+  home: z.boolean(),
+  gallery: z.boolean(),
+  events: z.boolean(),
+  notices: z.boolean(),
+  staff: z.boolean(),
+  contact: z.boolean()
 });
