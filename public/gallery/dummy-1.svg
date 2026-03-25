@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E9F3FF"/>
+      <stop offset="1" stop-color="#BFD8FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect x="190" y="190" width="1220" height="620" rx="28" fill="#FFFFFF" stroke="#2F79F7" stroke-width="10"/>
+  <circle cx="420" cy="500" r="120" fill="#2F79F7" opacity="0.16"/>
+  <rect x="560" y="380" width="700" height="32" rx="16" fill="#2F79F7" opacity="0.38"/>
+  <rect x="560" y="438" width="560" height="24" rx="12" fill="#2F79F7" opacity="0.3"/>
+  <rect x="560" y="486" width="420" height="24" rx="12" fill="#2F79F7" opacity="0.24"/>
+  <text x="800" y="770" text-anchor="middle" font-size="60" font-family="Arial, sans-serif" fill="#1D4CA9" font-weight="700">DMPS Dummy Image 01</text>
+</svg>

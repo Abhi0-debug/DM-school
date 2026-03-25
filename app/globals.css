@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "../styles/animations.css";
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-inter), sans-serif;
+  background-image: radial-gradient(circle at 20% -5%, rgba(47, 121, 247, 0.14), transparent 28%), radial-gradient(circle at 90% 0, rgba(255, 255, 255, 0.8), transparent 34%);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-poppins), sans-serif;
+}
+
+.section-shell {
+  @apply mx-auto max-w-6xl px-4 sm:px-6;
+}
+
+.section-spacing {
+  @apply py-16 sm:py-20;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.dark body {
+  background-image: radial-gradient(circle at 20% -5%, rgba(47, 121, 247, 0.22), transparent 28%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
