@@ -15,7 +15,8 @@ export const siteConfig = {
     address: "DM Public School, Civil Lines, New Delhi"
   },
   socials: {
-    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "919999999999"
+    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "919999999999",
+    instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? ""
   }
 };
 
