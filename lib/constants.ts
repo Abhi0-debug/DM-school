@@ -12,23 +12,23 @@ export const navigationLinks = [
 export const fallbackHeroSlides = [
   {
     id: "hero-1",
-    url: "https://images.unsplash.com/photo-1503676382389-4809596d5290?auto=format&fit=crop&w=1800&q=80",
-    alt: "Students walking in the school corridor"
+    url: "/images/New Building.jpeg",
+    alt: "A Campus Designed to Inspire Learning and Growth"
   },
   {
     id: "hero-2",
-    url: "https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=1800&q=80",
-    alt: "Classroom learning session"
+    url: "/images/indoor_corridor.jpeg",
+    alt: "Where Curiosity Comes Alive"
   },
   {
     id: "hero-3",
-    url: "https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1800&q=80",
-    alt: "Interactive teacher and student session"
+    url: "/images/X_mas.JPG",
+    alt: "Spreading Joy, Learning and cheer"
   },
   {
     id: "hero-4",
-    url: "https://images.unsplash.com/photo-1594608661623-aa0bd3a69d98?auto=format&fit=crop&w=1800&q=80",
-    alt: "School assembly and activities"
+    url: "/images/Republic_day.jpeg",
+    alt: "Proud to Learn, Proud to Be Indian"
   }
 ];
 

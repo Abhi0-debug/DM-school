@@ -5,26 +5,28 @@ import { siteConfig } from "@/lib/site-config";
 interface LogoProps {
   compact?: boolean;
   mode?: "light" | "dark";
+  variant?: "default" | "hero"; 
 }
 
-export function Logo({ compact = false, mode = "light" }: LogoProps) {
+export function Logo({ compact = false, mode = "light", variant = "default"}: LogoProps) {
   const useImage = siteConfig.logo.mode === "image";
   const isDarkModeSurface = mode === "dark";
 
   if (useImage) {
     return (
       <div
-        className={`relative h-11 w-11 overflow-hidden rounded-full border shadow-lg backdrop-blur-lg ${
+      className={`relative h-11 w-11 overflow-hidden ${variant === "hero"? "": `rounded-full border shadow-lg backdrop-blur-lg ${
           isDarkModeSurface
             ? "border-slate-200 bg-white"
             : "border-white/25 bg-white/15"
+        }`
         }`}
       >
         <Image
           src={siteConfig.logo.imagePath}
           alt={`${siteConfig.shortName} logo`}
           fill
-          className="object-cover"
+          className="object-contain p-1"
           sizes="44px"
           priority
         />

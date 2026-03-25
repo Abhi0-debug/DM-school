@@ -1,23 +1,14 @@
 import Image from "next/image";
 import { staffMembers } from "@/lib/constants";
-import { StaffMember } from "@/lib/types";
 import { SectionHeading } from "@/components/section-heading";
 
-interface StaffSectionProps {
-  initialMembers?: StaffMember[];
-}
-
-export function StaffSection({ initialMembers }: StaffSectionProps) {
-  const members = initialMembers && initialMembers.length > 0
-    ? initialMembers
-    : staffMembers;
-
+export function StaffSection() {
   return (
     <section id="staff" className="section-shell section-spacing">
       <SectionHeading title="Faculty" subtitle="Meet Our Teaching Team" />
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {members.map((member) => (
+        {staffMembers.map((member) => (
           <article
             key={member.id}
             className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-900"

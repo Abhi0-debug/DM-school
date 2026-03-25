@@ -3,75 +3,22 @@
 import Link from "next/link";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { navigationLinks } from "@/lib/constants";
 import { siteConfig } from "@/lib/site-config";
 import { Logo } from "@/components/logo";
-import { NavConfig, NavSectionKey } from "@/lib/types";
-
-function toSectionKey(href: string): NavSectionKey {
-  return href.replace("#", "") as NavSectionKey;
-}
-
-const defaultNavConfig: NavConfig = {
-  home: true,
-  gallery: true,
-  events: true,
-  notices: true,
-  staff: true,
-  contact: true
-};
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeLink, setActiveLink] = useState("#home");
-  const [navConfig, setNavConfig] = useState<NavConfig>(defaultNavConfig);
   const { theme, setTheme } = useTheme();
-
-  const visibleLinks = useMemo(
-    () =>
-      navigationLinks.filter((link) => {
-        const key = toSectionKey(link.href);
-        return navConfig[key];
-      }),
-    [navConfig]
-  );
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadNavConfig = async () => {
-      try {
-        const response = await fetch("/api/nav-config", {
-          cache: "no-store"
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const payload = (await response.json()) as { config?: NavConfig };
-        if (mounted && payload.config) {
-          setNavConfig(payload.config);
-        }
-      } catch {
-        // Keep default nav visibility.
-      }
-    };
-
-    loadNavConfig();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 12);
 
-      for (const link of visibleLinks) {
+      for (const link of navigationLinks) {
         const section = document.querySelector(link.href);
         if (!section) {
           continue;
@@ -88,7 +35,7 @@ export function Navbar() {
     onScroll();
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
-  }, [visibleLinks]);
+  }, []);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 py-4 transition-all duration-300">
@@ -127,7 +74,7 @@ export function Navbar() {
                 : "border-white/20 bg-white/10"
             }`}
           >
-            {visibleLinks.map((link) => (
+            {navigationLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -193,7 +140,7 @@ export function Navbar() {
               : "border-white/20 bg-white/20"
           }`}
         >
-          {visibleLinks.map((link) => (
+          {navigationLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}

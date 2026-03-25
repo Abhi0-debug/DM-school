@@ -49,21 +49,8 @@ import {
   useState
 } from "react";
 import { EventItem, GalleryImage, NoticeItem, NoticeType } from "@/lib/types";
-import { AdminHeroManager } from "@/components/admin-hero-manager";
-import { AdminStaffManager } from "@/components/admin-staff-manager";
-import { AdminContactManager } from "@/components/admin-contact-manager";
-import { AdminNavbarManager } from "@/components/admin-navbar-manager";
 
-type SectionKey =
-  | "overview"
-  | "hero"
-  | "gallery"
-  | "events"
-  | "notices"
-  | "staff"
-  | "contact"
-  | "navbar"
-  | "settings";
+type SectionKey = "overview" | "events" | "notices" | "gallery" | "settings";
 type ToastType = "success" | "error";
 
 interface ToastItem {
@@ -119,13 +106,9 @@ const sidebarItems: Array<{
   icon: LucideIcon;
 }> = [
   { key: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
-  { key: "hero", label: "Hero Slides", icon: ImageIcon },
-  { key: "gallery", label: "Gallery", icon: ImageIcon },
   { key: "events", label: "Events", icon: CalendarDays },
   { key: "notices", label: "Notices", icon: Bell },
-  { key: "staff", label: "Staff", icon: Shield },
-  { key: "contact", label: "Contact", icon: MapPin },
-  { key: "navbar", label: "Navbar Control", icon: Menu },
+  { key: "gallery", label: "Gallery", icon: ImageIcon },
   { key: "settings", label: "Settings", icon: Settings }
 ];
 
@@ -268,7 +251,6 @@ export function AdminPanel() {
     useState<NoticeFormState>(initialNoticeForm);
 
   const [uploadDrafts, setUploadDrafts] = useState<UploadDraft[]>([]);
-  const [uploadCategory, setUploadCategory] = useState("Campus");
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -751,13 +733,13 @@ export function AdminPanel() {
             .replace(/\.[^.]+$/, "")
             .replace(/[-_]/g, " ")
             .trim(),
-          category: uploadCategory
+          category: "Campus"
         };
       });
 
       setUploadDrafts((current) => [...current, ...drafts]);
     },
-    [addToast, uploadCategory]
+    [addToast]
   );
 
   const onUploadInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -767,12 +749,6 @@ export function AdminPanel() {
     }
     event.target.value = "";
   };
-
-  useEffect(() => {
-    setUploadDrafts((current) =>
-      current.map((item) => ({ ...item, category: uploadCategory }))
-    );
-  }, [uploadCategory]);
 
   const removeUploadDraft = (id: string) => {
     setUploadDrafts((current) => {
@@ -807,7 +783,7 @@ export function AdminPanel() {
         JSON.stringify(
           uploadDrafts.map((draft) => ({
             alt: draft.alt,
-            category: uploadCategory
+            category: draft.category
           }))
         )
       );
@@ -882,7 +858,7 @@ export function AdminPanel() {
       message: "This image will be removed from gallery permanently.",
       confirmLabel: "Delete",
       action: async () => {
-        const payload = await apiRequest<ApiMessage>(`/api/gallery/${id}`, {
+        const payload = await apiRequest<ApiMessage>(`/api/admin/images/${id}`, {
           method: "DELETE"
         });
         setImages((current) => current.filter((item) => item.id !== id));
@@ -1743,18 +1719,6 @@ export function AdminPanel() {
 
                 {uploadDrafts.length > 0 ? (
                   <div className="mt-4 space-y-3">
-                    <div className="max-w-xs">
-                      <label className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                        Category For Selected Images
-                      </label>
-                      <input
-                        value={uploadCategory}
-                        onChange={(event) => setUploadCategory(event.target.value)}
-                        placeholder="Category"
-                        className="mt-1 w-full rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
-                      />
-                    </div>
-
                     <div className="grid gap-3 sm:grid-cols-2">
                       {uploadDrafts.map((draft) => (
                         <div
@@ -1783,9 +1747,20 @@ export function AdminPanel() {
                             placeholder="Caption"
                             className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                           />
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Category: {uploadCategory}
-                          </p>
+                          <input
+                            value={draft.category}
+                            onChange={(event) =>
+                              setUploadDrafts((current) =>
+                                current.map((item) =>
+                                  item.id === draft.id
+                                    ? { ...item, category: event.target.value }
+                                    : item
+                                )
+                              )
+                            }
+                            placeholder="Category"
+                            className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                          />
                           <button
                             type="button"
                             onClick={() => removeUploadDraft(draft.id)}
@@ -1925,34 +1900,6 @@ export function AdminPanel() {
                 </SortableContext>
               </DndContext>
             </div>
-          ) : null}
-
-          {activeSection === "hero" ? (
-            <AdminHeroManager
-              apiRequest={apiRequest}
-              addToast={addToast}
-              requestConfirm={requestConfirm}
-            />
-          ) : null}
-
-          {activeSection === "staff" ? (
-            <AdminStaffManager
-              apiRequest={apiRequest}
-              addToast={addToast}
-              requestConfirm={requestConfirm}
-            />
-          ) : null}
-
-          {activeSection === "contact" ? (
-            <AdminContactManager
-              apiRequest={apiRequest}
-              addToast={addToast}
-              requestConfirm={requestConfirm}
-            />
-          ) : null}
-
-          {activeSection === "navbar" ? (
-            <AdminNavbarManager apiRequest={apiRequest} addToast={addToast} />
           ) : null}
 
           {activeSection === "settings" ? (

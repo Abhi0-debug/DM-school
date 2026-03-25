@@ -2,11 +2,6 @@
 
 Production-ready school website built with **Next.js App Router + Tailwind CSS**.
 
-## Prerequisites
-
-- Node.js 20+
-- npm 10+
-
 ## Features
 
 - Modern, responsive UI for **DM Public School**
@@ -63,10 +58,6 @@ npm install
 
 ```bash
 cp .env.example .env.local
-```
-
-```powershell
-Copy-Item .env.example .env.local
 ```
 
 3. Start development server:

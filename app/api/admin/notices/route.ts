@@ -6,15 +6,6 @@ import { noticeSchema, reorderSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
-  if (!(await isAdminAuthorized(request))) {
-    return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
-  }
-
-  const notices = await readJsonFile<NoticeItem[]>("notices.json", []);
-  return NextResponse.json({ notices });
-}
-
 export async function POST(request: NextRequest) {
   if (!(await isAdminAuthorized(request))) {
     return NextResponse.json({ message: "Unauthorized." }, { status: 401 });

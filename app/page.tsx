@@ -10,27 +10,21 @@ import { ContactSection } from "@/components/contact-section";
 import { MapSection } from "@/components/map-section";
 import { Footer } from "@/components/footer";
 import { WhatsAppButton } from "@/components/whatsapp-button";
-import {
-  getEvents,
-  getGalleryImages,
-  getHeroSlides,
-  getNotices,
-  getStaffMembers
-} from "@/lib/data";
+import { getEvents, getGalleryImages, getNotices } from "@/lib/data";
+import { fallbackHeroSlides } from "@/lib/constants";
 import { getDynamicHero, getDynamicImages } from "@/lib/media-provider";
+import { InstagramButton } from "@/components/instagram-button";
 
 export default async function HomePage() {
-  const [events, notices, galleryFallback, heroFallback, staff] = await Promise.all([
+  const [events, notices, galleryFallback] = await Promise.all([
     getEvents(),
     getNotices(),
-    getGalleryImages(),
-    getHeroSlides(),
-    getStaffMembers()
+    getGalleryImages()
   ]);
 
   const [galleryImages, heroSlides] = await Promise.all([
     getDynamicImages(galleryFallback),
-    getDynamicHero(heroFallback)
+    getDynamicHero(fallbackHeroSlides)
   ]);
 
   return (
@@ -41,7 +35,7 @@ export default async function HomePage() {
         <Gallery initialImages={galleryImages} />
         <EventsSection initialEvents={events} />
         <NoticeBoard initialNotices={notices} />
-        <StaffSection initialMembers={staff} />
+        <StaffSection />
         <DownloadsSection />
         <NewsletterSection />
         <ContactSection />
@@ -49,6 +43,7 @@ export default async function HomePage() {
       </main>
       <Footer />
       <WhatsAppButton />
+      <InstagramButton />
     </>
   );
 }
