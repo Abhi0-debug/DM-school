@@ -15,8 +15,7 @@ export const siteConfig = {
     address: "D.M. Public School, Plot no 408, Puri 1, beside Hanuman Temple, near Dr.Baren Pattanaik Eye Clinic, Duttatota, Puri, Odisha 752001"
   },
   socials: {
-    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "919999999999",
-    instagram: "https://instagram.com/yourusername"
+    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "919999999999"
   }
 };
 

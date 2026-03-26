@@ -40,6 +40,31 @@ export interface StaffMember {
   photo: string;
 }
 
+export interface ContactSettings {
+  email: string;
+  phone: string;
+  address: string;
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  createdAt: string;
+}
+
+export type NavSectionKey =
+  | "home"
+  | "gallery"
+  | "events"
+  | "notices"
+  | "staff"
+  | "contact";
+
+export type NavConfig = Record<NavSectionKey, boolean>;
+
 export interface DownloadItem {
   id: string;
   title: string;

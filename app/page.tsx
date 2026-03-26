@@ -13,7 +13,6 @@ import { WhatsAppButton } from "@/components/whatsapp-button";
 import { getEvents, getGalleryImages, getNotices } from "@/lib/data";
 import { fallbackHeroSlides } from "@/lib/constants";
 import { getDynamicHero, getDynamicImages } from "@/lib/media-provider";
-import { InstagramButton } from "@/components/instagram-button";
 
 export default async function HomePage() {
   const [events, notices, galleryFallback] = await Promise.all([
@@ -43,7 +42,6 @@ export default async function HomePage() {
       </main>
       <Footer />
       <WhatsAppButton />
-      <InstagramButton />
     </>
   );
 }

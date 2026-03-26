@@ -2,7 +2,7 @@ import { siteConfig } from "@/lib/site-config";
 
 const mapUrl =
   process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED ??
-  "https://maps.google.com/maps?q=New%20Delhi&t=&z=13&ie=UTF8&iwloc=&output=embed";
+  "https://www.google.com/maps?q=19.8062206,85.8293776&z=17&output=embed";
 
 export function MapSection() {
   return (
