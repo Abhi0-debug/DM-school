@@ -7,11 +7,20 @@ export interface HeroSlide {
   alt: string;
 }
 
+export interface HeroContent {
+  id: string;
+  admissionsText: string;
+  updatedAt: string;
+}
+
 export interface GalleryImage {
   id: string;
   url: string;
   alt: string;
   category: string;
+  title?: string;
+  publicId?: string;
+  sortOrder?: number;
 }
 
 export interface EventItem {
@@ -22,6 +31,7 @@ export interface EventItem {
   location: string;
   category: string;
   type: EventType;
+  createdAt?: string;
 }
 
 export interface NoticeItem {
@@ -30,6 +40,7 @@ export interface NoticeItem {
   content: string;
   date: string;
   type: NoticeType;
+  createdAt?: string;
 }
 
 export interface StaffMember {
@@ -38,6 +49,16 @@ export interface StaffMember {
   subject: string;
   bio: string;
   photo: string;
+  publicId?: string;
+}
+
+export interface Teacher {
+  id: string;
+  name: string;
+  subject: string;
+  description: string;
+  imageUrl: string;
+  publicId: string;
 }
 
 export interface ContactSettings {
@@ -70,6 +91,17 @@ export interface DownloadItem {
   title: string;
   date: string;
   fileUrl: string;
+  filePath?: string;
+  publicUrl?: string;
+  createdAt?: string;
+}
+
+export interface DocumentItem {
+  id: string;
+  title: string;
+  filePath: string;
+  publicUrl: string;
+  createdAt: string;
 }
 
 export interface ContactPayload {

@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import { StaffMember } from "@/lib/types";
+import { StaffMember, Teacher } from "@/lib/types";
 
 type ToastType = "success" | "error";
 
@@ -17,7 +18,6 @@ interface StaffFormState {
   name: string;
   subject: string;
   bio: string;
-  photo: string;
 }
 
 interface AdminStaffManagerProps {
@@ -29,9 +29,25 @@ interface AdminStaffManagerProps {
 const initialStaffForm: StaffFormState = {
   name: "",
   subject: "",
-  bio: "",
-  photo: ""
+  bio: ""
 };
+
+function toStaffMember(teacher: Teacher): StaffMember {
+  return {
+    id: teacher.id,
+    name: teacher.name,
+    subject: teacher.subject,
+    bio: teacher.description,
+    photo: teacher.imageUrl,
+    publicId: teacher.publicId
+  };
+}
+
+function revokeUrl(url: string | null) {
+  if (url && url.startsWith("blob:")) {
+    URL.revokeObjectURL(url);
+  }
+}
 
 export function AdminStaffManager({
   apiRequest,
@@ -41,8 +57,12 @@ export function AdminStaffManager({
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(false);
   const [staffForm, setStaffForm] = useState<StaffFormState>(initialStaffForm);
+  const [staffImageFile, setStaffImageFile] = useState<File | null>(null);
+  const [staffImagePreview, setStaffImagePreview] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [staffEditForm, setStaffEditForm] = useState<StaffFormState>(initialStaffForm);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -50,12 +70,12 @@ export function AdminStaffManager({
     const loadStaff = async () => {
       setLoading(true);
       try {
-        const payload = await apiRequest<{ staff?: StaffMember[] }>("/api/admin/staff", {
+        const payload = await apiRequest<{ teachers?: Teacher[] }>("/api/teachers", {
           cache: "no-store"
         });
 
         if (mounted) {
-          setStaff(payload.staff ?? []);
+          setStaff((payload.teachers ?? []).map(toStaffMember));
         }
       } catch (error) {
         addToast(
@@ -76,20 +96,67 @@ export function AdminStaffManager({
     };
   }, [addToast, apiRequest]);
 
+  useEffect(() => {
+    return () => {
+      revokeUrl(staffImagePreview);
+      revokeUrl(editImagePreview);
+    };
+  }, [editImagePreview, staffImagePreview]);
+
+  const onCreateImageChange = (file: File | null) => {
+    revokeUrl(staffImagePreview);
+
+    if (!file) {
+      setStaffImageFile(null);
+      setStaffImagePreview(null);
+      return;
+    }
+
+    setStaffImageFile(file);
+    setStaffImagePreview(URL.createObjectURL(file));
+  };
+
+  const onEditImageChange = (file: File | null) => {
+    revokeUrl(editImagePreview);
+
+    if (!file) {
+      setEditImageFile(null);
+      setEditImagePreview(null);
+      return;
+    }
+
+    setEditImageFile(file);
+    setEditImagePreview(URL.createObjectURL(file));
+  };
+
   const onCreateStaff = async (event: FormEvent) => {
     event.preventDefault();
 
+    if (!staffImageFile) {
+      addToast("error", "Please select a teacher image.");
+      return;
+    }
+
     try {
-      const payload = await apiRequest<{ message?: string; member: StaffMember }>(
-        "/api/admin/staff",
+      const formData = new FormData();
+      formData.append("name", staffForm.name);
+      formData.append("subject", staffForm.subject);
+      formData.append("description", staffForm.bio);
+      formData.append("image", staffImageFile);
+
+      const payload = await apiRequest<{ message?: string; teacher: Teacher }>(
+        "/api/teachers",
         {
           method: "POST",
-          body: JSON.stringify(staffForm)
+          body: formData
         }
       );
 
-      setStaff((current) => [payload.member, ...current]);
+      setStaff((current) => [toStaffMember(payload.teacher), ...current]);
       setStaffForm(initialStaffForm);
+      setStaffImageFile(null);
+      revokeUrl(staffImagePreview);
+      setStaffImagePreview(null);
       addToast("success", payload.message ?? "Staff member added.");
     } catch (error) {
       addToast(
@@ -104,9 +171,11 @@ export function AdminStaffManager({
     setStaffEditForm({
       name: member.name,
       subject: member.subject,
-      bio: member.bio,
-      photo: member.photo
+      bio: member.bio
     });
+    setEditImageFile(null);
+    revokeUrl(editImagePreview);
+    setEditImagePreview(member.photo);
   };
 
   const saveStaffEdit = async () => {
@@ -115,19 +184,32 @@ export function AdminStaffManager({
     }
 
     try {
-      const payload = await apiRequest<{ message?: string; member: StaffMember }>(
-        `/api/admin/staff/${editingId}`,
+      const formData = new FormData();
+      formData.append("name", staffEditForm.name);
+      formData.append("subject", staffEditForm.subject);
+      formData.append("description", staffEditForm.bio);
+      if (editImageFile) {
+        formData.append("image", editImageFile);
+      }
+
+      const payload = await apiRequest<{ message?: string; teacher: Teacher }>(
+        `/api/teachers/${editingId}`,
         {
           method: "PUT",
-          body: JSON.stringify(staffEditForm)
+          body: formData
         }
       );
 
       setStaff((current) =>
-        current.map((item) => (item.id === editingId ? payload.member : item))
+        current.map((item) =>
+          item.id === editingId ? toStaffMember(payload.teacher) : item
+        )
       );
 
       setEditingId(null);
+      setEditImageFile(null);
+      revokeUrl(editImagePreview);
+      setEditImagePreview(null);
       addToast("success", payload.message ?? "Staff member updated.");
     } catch (error) {
       addToast(
@@ -143,12 +225,9 @@ export function AdminStaffManager({
       message: "This staff member will be removed permanently.",
       confirmLabel: "Delete",
       action: async () => {
-        const payload = await apiRequest<{ message?: string }>(
-          `/api/admin/staff/${id}`,
-          {
-            method: "DELETE"
-          }
-        );
+        const payload = await apiRequest<{ message?: string }>(`/api/teachers/${id}`, {
+          method: "DELETE"
+        });
         setStaff((current) => current.filter((item) => item.id !== id));
         addToast("success", payload.message ?? "Staff member deleted.");
       }
@@ -172,7 +251,7 @@ export function AdminStaffManager({
             }
             placeholder="Teacher name"
             required
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+            className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
           />
           <input
             value={staffForm.subject}
@@ -181,18 +260,26 @@ export function AdminStaffManager({
             }
             placeholder="Subject"
             required
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+            className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
           />
           <input
-            value={staffForm.photo}
-            onChange={(event) =>
-              setStaffForm((current) => ({ ...current, photo: event.target.value }))
-            }
-            placeholder="Photo URL or /uploads path"
+            type="file"
+            accept="image/*"
+            onChange={(event) => onCreateImageChange(event.target.files?.[0] ?? null)}
             required
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 md:col-span-2"
+            className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900 md:col-span-2"
           />
         </div>
+        {staffImagePreview ? (
+          <div className="relative mt-3 h-36 w-full overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+            <Image
+              src={staffImagePreview}
+              alt="Teacher preview"
+              fill
+              className="object-cover"
+            />
+          </div>
+        ) : null}
         <textarea
           rows={3}
           value={staffForm.bio}
@@ -201,11 +288,11 @@ export function AdminStaffManager({
           }
           placeholder="Teacher bio"
           required
-          className="mt-3 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+          className="mt-3 min-h-[44px] w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
         />
         <button
           type="submit"
-          className="mt-3 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+          className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           Add Teacher
@@ -236,14 +323,14 @@ export function AdminStaffManager({
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                 {member.subject}
               </p>
-              <p className="text-sm text-slate-600 dark:text-slate-300">{member.bio}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{member.photo}</p>
+              <p className="break-words text-sm text-slate-600 dark:text-slate-300">{member.bio}</p>
+              <p className="break-all text-xs text-slate-500 dark:text-slate-400">{member.photo}</p>
 
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => startEditStaff(member)}
-                  className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium dark:border-slate-700"
+                  className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium dark:border-slate-700"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   Edit
@@ -251,7 +338,7 @@ export function AdminStaffManager({
                 <button
                   type="button"
                   onClick={() => deleteStaff(member.id)}
-                  className="inline-flex items-center gap-1 rounded-md border border-rose-200 px-2.5 py-1.5 text-xs font-medium text-rose-700 dark:border-rose-800 dark:text-rose-300"
+                  className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-rose-200 px-2.5 py-1.5 text-xs font-medium text-rose-700 dark:border-rose-800 dark:text-rose-300"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Delete
@@ -268,7 +355,7 @@ export function AdminStaffManager({
                         name: event.target.value
                       }))
                     }
-                    className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                   <input
                     value={staffEditForm.subject}
@@ -278,18 +365,24 @@ export function AdminStaffManager({
                         subject: event.target.value
                       }))
                     }
-                    className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                   <input
-                    value={staffEditForm.photo}
-                    onChange={(event) =>
-                      setStaffEditForm((current) => ({
-                        ...current,
-                        photo: event.target.value
-                      }))
-                    }
-                    className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => onEditImageChange(event.target.files?.[0] ?? null)}
+                    className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
+                  {editImagePreview ? (
+                    <div className="relative h-32 w-full overflow-hidden rounded-md border border-slate-200 dark:border-slate-700">
+                      <Image
+                        src={editImagePreview}
+                        alt="Teacher edit preview"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : null}
                   <textarea
                     rows={3}
                     value={staffEditForm.bio}
@@ -299,20 +392,25 @@ export function AdminStaffManager({
                         bio: event.target.value
                       }))
                     }
-                    className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={saveStaffEdit}
-                      className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
+                      className="min-h-[36px] rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
                     >
                       Save
                     </button>
                     <button
                       type="button"
-                      onClick={() => setEditingId(null)}
-                      className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold dark:border-slate-700"
+                      onClick={() => {
+                        setEditingId(null);
+                        setEditImageFile(null);
+                        revokeUrl(editImagePreview);
+                        setEditImagePreview(null);
+                      }}
+                      className="min-h-[36px] rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold dark:border-slate-700"
                     >
                       Cancel
                     </button>

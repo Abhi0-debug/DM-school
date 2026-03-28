@@ -166,7 +166,7 @@ export function AdminHeroManager({
             }
             placeholder="Image URL or /uploads path"
             required
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+            className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
           />
           <input
             value={heroForm.alt}
@@ -175,12 +175,12 @@ export function AdminHeroManager({
             }
             placeholder="Slide caption"
             required
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+            className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
           />
         </div>
         <button
           type="submit"
-          className="mt-3 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+          className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           Add Slide
@@ -205,8 +205,8 @@ export function AdminHeroManager({
               key={slide.id}
               className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-md dark:border-slate-700 dark:bg-slate-900"
             >
-              <p className="text-xs text-slate-500 dark:text-slate-400">{slide.url}</p>
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <p className="break-all text-xs text-slate-500 dark:text-slate-400">{slide.url}</p>
+              <p className="break-words text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {slide.alt}
               </p>
 
@@ -214,7 +214,7 @@ export function AdminHeroManager({
                 <button
                   type="button"
                   onClick={() => startEditSlide(slide)}
-                  className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium dark:border-slate-700"
+                  className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium dark:border-slate-700"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   Edit
@@ -222,7 +222,7 @@ export function AdminHeroManager({
                 <button
                   type="button"
                   onClick={() => deleteSlide(slide.id)}
-                  className="inline-flex items-center gap-1 rounded-md border border-rose-200 px-2.5 py-1.5 text-xs font-medium text-rose-700 dark:border-rose-800 dark:text-rose-300"
+                  className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-rose-200 px-2.5 py-1.5 text-xs font-medium text-rose-700 dark:border-rose-800 dark:text-rose-300"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Delete
@@ -239,7 +239,7 @@ export function AdminHeroManager({
                         url: event.target.value
                       }))
                     }
-                    className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                   <input
                     value={heroEditForm.alt}
@@ -249,20 +249,20 @@ export function AdminHeroManager({
                         alt: event.target.value
                       }))
                     }
-                    className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={saveSlideEdit}
-                      className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
+                      className="min-h-[36px] rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
                     >
                       Save
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingId(null)}
-                      className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold dark:border-slate-700"
+                      className="min-h-[36px] rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold dark:border-slate-700"
                     >
                       Cancel
                     </button>

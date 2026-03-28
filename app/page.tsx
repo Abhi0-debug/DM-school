@@ -10,15 +10,16 @@ import { ContactSection } from "@/components/contact-section";
 import { MapSection } from "@/components/map-section";
 import { Footer } from "@/components/footer";
 import { WhatsAppButton } from "@/components/whatsapp-button";
-import { getEvents, getGalleryImages, getNotices } from "@/lib/data";
+import { getEvents, getGalleryImages, getNotices, getStaffMembers } from "@/lib/data";
 import { fallbackHeroSlides } from "@/lib/constants";
 import { getDynamicHero, getDynamicImages } from "@/lib/media-provider";
 
 export default async function HomePage() {
-  const [events, notices, galleryFallback] = await Promise.all([
+  const [events, notices, galleryFallback, staff] = await Promise.all([
     getEvents(),
     getNotices(),
-    getGalleryImages()
+    getGalleryImages(),
+    getStaffMembers()
   ]);
 
   const [galleryImages, heroSlides] = await Promise.all([
@@ -34,7 +35,7 @@ export default async function HomePage() {
         <Gallery initialImages={galleryImages} />
         <EventsSection initialEvents={events} />
         <NoticeBoard initialNotices={notices} />
-        <StaffSection />
+        <StaffSection initialMembers={staff} />
         <DownloadsSection />
         <NewsletterSection />
         <ContactSection />

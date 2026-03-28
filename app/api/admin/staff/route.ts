@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthorized } from "@/lib/admin-auth";
-import { readJsonFile, writeJsonFile } from "@/lib/file-store";
-import { StaffMember } from "@/lib/types";
-import { staffSchema } from "@/lib/validation";
+import {
+  createTeacher,
+  listTeacherStaffMembers,
+  parseTeacherFormData
+} from "@/lib/teacher-service";
+import { teacherTextSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
@@ -11,8 +14,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
   }
 
-  const staff = await readJsonFile<StaffMember[]>("staff.json", []);
-  return NextResponse.json({ staff });
+  try {
+    const staff = await listTeacherStaffMembers();
+    return NextResponse.json({ staff });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to load staff.";
+    return NextResponse.json({ message }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -20,24 +29,52 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
   }
 
-  const payload = await request.json();
-  const parsed = staffSchema.safeParse(payload);
-
-  if (!parsed.success) {
+  const contentType = request.headers.get("content-type") ?? "";
+  if (!contentType.includes("multipart/form-data")) {
     return NextResponse.json(
-      { message: parsed.error.issues[0]?.message ?? "Invalid staff payload." },
+      { message: "Use multipart/form-data to create teacher." },
       { status: 400 }
     );
   }
 
-  const staff = await readJsonFile<StaffMember[]>("staff.json", []);
-  const member: StaffMember = {
-    id: `staff-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    ...parsed.data
-  };
+  try {
+    const formData = await request.formData();
+    const parsedForm = parseTeacherFormData(formData, { requireImage: true });
+    const parsedText = teacherTextSchema.safeParse(parsedForm);
 
-  staff.unshift(member);
-  await writeJsonFile("staff.json", staff);
+    if (!parsedText.success) {
+      return NextResponse.json(
+        { message: parsedText.error.issues[0]?.message ?? "Invalid staff payload." },
+        { status: 400 }
+      );
+    }
 
-  return NextResponse.json({ message: "Staff member added.", member });
+    if (!parsedForm.imageFile) {
+      return NextResponse.json(
+        { message: "Teacher image file is required." },
+        { status: 400 }
+      );
+    }
+
+    const teacher = await createTeacher({
+      ...parsedText.data,
+      imageFile: parsedForm.imageFile
+    });
+
+    const member = {
+      id: teacher.id,
+      name: teacher.name,
+      subject: teacher.subject,
+      bio: teacher.description,
+      photo: teacher.imageUrl,
+      publicId: teacher.publicId
+    };
+
+    return NextResponse.json({ message: "Staff member added.", member });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to add staff member.";
+    const status = message.includes("required") ? 400 : 500;
+    return NextResponse.json({ message }, { status });
+  }
 }

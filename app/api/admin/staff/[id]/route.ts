@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthorized } from "@/lib/admin-auth";
-import { readJsonFile, writeJsonFile } from "@/lib/file-store";
-import { StaffMember } from "@/lib/types";
-import { staffSchema } from "@/lib/validation";
+import { deleteTeacher, parseTeacherFormData, updateTeacher } from "@/lib/teacher-service";
+import { teacherTextSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
 
@@ -15,28 +14,65 @@ export async function PUT(
   }
 
   const { id } = await context.params;
-  const payload = await request.json();
-  const parsed = staffSchema.safeParse(payload);
+  const contentType = request.headers.get("content-type") ?? "";
 
-  if (!parsed.success) {
-    return NextResponse.json(
-      { message: parsed.error.issues[0]?.message ?? "Invalid staff payload." },
-      { status: 400 }
-    );
+  try {
+    let payload: {
+      name: string;
+      subject: string;
+      description: string;
+      imageFile: File | null;
+    };
+
+    if (contentType.includes("multipart/form-data")) {
+      payload = parseTeacherFormData(await request.formData());
+    } else {
+      const json = (await request.json()) as {
+        name?: string;
+        subject?: string;
+        bio?: string;
+        description?: string;
+      };
+      payload = {
+        name: String(json.name ?? "").trim(),
+        subject: String(json.subject ?? "").trim(),
+        description: String(json.description ?? json.bio ?? "").trim(),
+        imageFile: null
+      };
+    }
+
+    const parsedText = teacherTextSchema.safeParse(payload);
+    if (!parsedText.success) {
+      return NextResponse.json(
+        { message: parsedText.error.issues[0]?.message ?? "Invalid staff payload." },
+        { status: 400 }
+      );
+    }
+
+    const updated = await updateTeacher(id, {
+      ...parsedText.data,
+      imageFile: payload.imageFile
+    });
+
+    if (!updated) {
+      return NextResponse.json({ message: "Staff member not found." }, { status: 404 });
+    }
+
+    const member = {
+      id: updated.id,
+      name: updated.name,
+      subject: updated.subject,
+      bio: updated.description,
+      photo: updated.imageUrl,
+      publicId: updated.publicId
+    };
+
+    return NextResponse.json({ message: "Staff member updated.", member });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to update staff member.";
+    return NextResponse.json({ message }, { status: 500 });
   }
-
-  const staff = await readJsonFile<StaffMember[]>("staff.json", []);
-  const index = staff.findIndex((member) => member.id === id);
-
-  if (index === -1) {
-    return NextResponse.json({ message: "Staff member not found." }, { status: 404 });
-  }
-
-  const updated: StaffMember = { id, ...parsed.data };
-  staff[index] = updated;
-  await writeJsonFile("staff.json", staff);
-
-  return NextResponse.json({ message: "Staff member updated.", member: updated });
 }
 
 export async function DELETE(
@@ -48,13 +84,17 @@ export async function DELETE(
   }
 
   const { id } = await context.params;
-  const staff = await readJsonFile<StaffMember[]>("staff.json", []);
-  const filtered = staff.filter((member) => member.id !== id);
 
-  if (filtered.length === staff.length) {
-    return NextResponse.json({ message: "Staff member not found." }, { status: 404 });
+  try {
+    const removed = await deleteTeacher(id);
+    if (!removed) {
+      return NextResponse.json({ message: "Staff member not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: "Staff member deleted." });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to delete staff member.";
+    return NextResponse.json({ message }, { status: 500 });
   }
-
-  await writeJsonFile("staff.json", filtered);
-  return NextResponse.json({ message: "Staff member deleted." });
 }

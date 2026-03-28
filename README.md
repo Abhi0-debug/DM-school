@@ -77,12 +77,34 @@ Key variables:
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_WHATSAPP_NUMBER`
 - `NEXT_PUBLIC_GOOGLE_MAPS_EMBED`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_DOCUMENTS_BUCKET` (default: `documents`)
 - `IMAGE_PROVIDER` (`local` or `cloudinary`)
 - `CLOUDINARY_*`
 - `SMTP_*`
 - `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`
 - `ADMIN_SECRET`
 - `STORE_MESSAGES_LOCALLY`
+
+## Supabase Setup (Events + Notices + Documents)
+
+1. Open Supabase SQL Editor.
+2. Run:
+
+```sql
+-- See full script in project:
+-- supabase/events_notices.sql
+-- supabase/documents.sql
+-- supabase/hero_content.sql
+```
+
+3. Add env vars in `.env.local`:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_DOCUMENTS_BUCKET`
 
 ## Admin Panel
 

@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
-import { getStaffMembers } from "@/lib/data";
+import { listTeacherStaffMembers } from "@/lib/teacher-service";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const staff = await getStaffMembers();
-  return NextResponse.json({ staff });
+  try {
+    const staff = await listTeacherStaffMembers();
+    return NextResponse.json({ staff });
+  } catch {
+    return NextResponse.json({ staff: [] });
+  }
 }

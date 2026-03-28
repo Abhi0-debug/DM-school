@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import { getGalleryImages } from "@/lib/data";
-import { getDynamicImages } from "@/lib/media-provider";
+import { listGalleryImages } from "@/lib/gallery-service";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  const localImages = await getGalleryImages();
-  const images = await getDynamicImages(localImages);
-  return NextResponse.json({ images });
+  try {
+    const images = await listGalleryImages();
+    return NextResponse.json({ images });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unable to load images.";
+    return NextResponse.json({ message }, { status: 500 });
+  }
 }

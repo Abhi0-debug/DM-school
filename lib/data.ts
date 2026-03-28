@@ -9,15 +9,25 @@ import {
   StaffMember
 } from "@/lib/types";
 import { readJsonFile } from "@/lib/file-store";
-import { fallbackHeroSlides, navigationLinks, staffMembers } from "@/lib/constants";
+import { fallbackHeroSlides, navigationLinks } from "@/lib/constants";
 import { siteConfig } from "@/lib/site-config";
 
 export async function getEvents() {
-  return readJsonFile<EventItem[]>("events.json", []);
+  try {
+    const { listEvents } = await import("@/lib/events-notices-service");
+    return await listEvents();
+  } catch {
+    return [];
+  }
 }
 
 export async function getNotices() {
-  return readJsonFile<NoticeItem[]>("notices.json", []);
+  try {
+    const { listNotices } = await import("@/lib/events-notices-service");
+    return await listNotices();
+  } catch {
+    return [];
+  }
 }
 
 export async function getGalleryImages() {
@@ -29,7 +39,12 @@ export async function getHeroSlides() {
 }
 
 export async function getStaffMembers() {
-  return readJsonFile<StaffMember[]>("staff.json", staffMembers);
+  try {
+    const { listTeacherStaffMembers } = await import("@/lib/teacher-service");
+    return await listTeacherStaffMembers();
+  } catch {
+    return [];
+  }
 }
 
 export async function getContactSettings() {

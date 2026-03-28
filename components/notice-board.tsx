@@ -44,7 +44,7 @@ export function NoticeBoard({ initialNotices }: NoticeBoardProps) {
             type="button"
             key={item.key}
             onClick={() => setTab(item.key)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+            className={`min-h-[44px] rounded-full px-4 py-2 text-sm font-medium transition ${
               tab === item.key
                 ? "bg-brand-600 text-white"
                 : "border border-slate-200 bg-white text-slate-700 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -86,7 +86,7 @@ export function NoticeBoard({ initialNotices }: NoticeBoardProps) {
               <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {notice.title}
               </h3>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+              <p className="mt-2 break-words text-sm text-slate-600 dark:text-slate-300">
                 {notice.content}
               </p>
             </article>

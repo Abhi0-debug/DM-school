@@ -1,11 +1,14 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   AlertCircle,
+  ArrowLeft,
   Bell,
   CalendarDays,
   CheckCircle2,
+  FileText,
   GripVertical,
   ImageIcon,
   LayoutDashboard,
@@ -49,8 +52,17 @@ import {
   useState
 } from "react";
 import { EventItem, GalleryImage, NoticeItem, NoticeType } from "@/lib/types";
+import { AdminStaffManager } from "@/components/admin-staff-manager";
+import { AdminDocumentsManager } from "@/components/admin-documents-manager";
 
-type SectionKey = "overview" | "events" | "notices" | "gallery" | "settings";
+type SectionKey =
+  | "overview"
+  | "events"
+  | "notices"
+  | "gallery"
+  | "documents"
+  | "staff"
+  | "settings";
 type ToastType = "success" | "error";
 
 interface ToastItem {
@@ -109,6 +121,8 @@ const sidebarItems: Array<{
   { key: "events", label: "Events", icon: CalendarDays },
   { key: "notices", label: "Notices", icon: Bell },
   { key: "gallery", label: "Gallery", icon: ImageIcon },
+  { key: "documents", label: "Documents", icon: FileText },
+  { key: "staff", label: "Staff", icon: Shield },
   { key: "settings", label: "Settings", icon: Settings }
 ];
 
@@ -139,6 +153,8 @@ const initialPinChange = {
   currentPin: "",
   newPin: ""
 };
+
+const defaultHeroAdmissionsText = "Admissions Open 2026";
 
 function formatPrettyDate(value: string) {
   const parsed = new Date(value);
@@ -263,6 +279,11 @@ export function AdminPanel() {
 
   const [pinChange, setPinChange] = useState(initialPinChange);
   const [pinChangeLoading, setPinChangeLoading] = useState(false);
+  const [heroAdmissionsText, setHeroAdmissionsText] = useState(
+    defaultHeroAdmissionsText
+  );
+  const [heroContentLoading, setHeroContentLoading] = useState(false);
+  const [heroContentSaving, setHeroContentSaving] = useState(false);
 
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
@@ -283,6 +304,10 @@ export function AdminPanel() {
     window.setTimeout(() => {
       setToasts((current) => current.filter((toast) => toast.id !== id));
     }, 2600);
+  }, []);
+
+  const broadcastGalleryUpdated = useCallback(() => {
+    window.dispatchEvent(new CustomEvent("gallery:updated"));
   }, []);
 
   const revokePreview = useCallback((url: string) => {
@@ -342,7 +367,7 @@ export function AdminPanel() {
       const [eventsRes, noticesRes, imagesRes] = await Promise.all([
         fetch("/api/events", { cache: "no-store" }),
         fetch("/api/notices", { cache: "no-store" }),
-        fetch("/api/gallery", { cache: "no-store" })
+        fetch("/api/images", { cache: "no-store" })
       ]);
 
       const [eventsPayload, noticesPayload, imagesPayload] = await Promise.all([
@@ -365,6 +390,7 @@ export function AdminPanel() {
       setEvents(nextEvents);
       setNotices(nextNotices);
       setImages(nextImages);
+      window.dispatchEvent(new CustomEvent("admin:refresh"));
     } catch (error) {
       addToast(
         "error",
@@ -374,6 +400,29 @@ export function AdminPanel() {
       );
     } finally {
       setLoadingData(false);
+    }
+  }, [addToast]);
+
+  const loadHeroAdmissionsText = useCallback(async () => {
+    setHeroContentLoading(true);
+    try {
+      const response = await fetch("/api/hero", { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("Unable to load hero admissions text.");
+      }
+
+      const payload = (await response.json()) as { admissionsText?: string };
+      const nextText = payload.admissionsText?.trim();
+      setHeroAdmissionsText(nextText && nextText.length > 0 ? nextText : defaultHeroAdmissionsText);
+    } catch (error) {
+      addToast(
+        "error",
+        error instanceof Error
+          ? error.message
+          : "Unable to load hero admissions text."
+      );
+    } finally {
+      setHeroContentLoading(false);
     }
   }, [addToast]);
 
@@ -388,7 +437,7 @@ export function AdminPanel() {
 
         if (response.ok && mounted) {
           setAuthenticated(true);
-          await loadDashboardData();
+          await Promise.all([loadDashboardData(), loadHeroAdmissionsText()]);
         }
       } finally {
         if (mounted) {
@@ -402,7 +451,7 @@ export function AdminPanel() {
     return () => {
       mounted = false;
     };
-  }, [loadDashboardData]);
+  }, [loadDashboardData, loadHeroAdmissionsText]);
 
   const stats = useMemo(
     () => [
@@ -472,12 +521,54 @@ export function AdminPanel() {
       setAuthenticated(true);
       setPin("");
       addToast("success", "Login successful.");
-      await loadDashboardData();
+      await Promise.all([loadDashboardData(), loadHeroAdmissionsText()]);
     } catch (error) {
       setPinError(error instanceof Error ? error.message : "Unable to login.");
     } finally {
       setPinLoading(false);
       setAuthChecked(true);
+    }
+  };
+
+  const saveHeroAdmissionsText = async (event: FormEvent) => {
+    event.preventDefault();
+    setHeroContentSaving(true);
+
+    try {
+      const payload = await apiRequest<{
+        message?: string;
+        admissionsText?: string;
+      }>("/api/hero", {
+        method: "PUT",
+        body: JSON.stringify({ admissionsText: heroAdmissionsText })
+      });
+
+      const nextText =
+        payload.admissionsText?.trim() && payload.admissionsText.trim().length > 0
+          ? payload.admissionsText.trim()
+          : defaultHeroAdmissionsText;
+
+      setHeroAdmissionsText(nextText);
+      try {
+        localStorage.setItem("hero:admissionsText", nextText);
+      } catch {
+        // Ignore localStorage errors in restrictive environments.
+      }
+      window.dispatchEvent(
+        new CustomEvent("hero:content-updated", {
+          detail: { admissionsText: nextText }
+        })
+      );
+      addToast("success", payload.message ?? "Hero admissions text updated.");
+    } catch (error) {
+      addToast(
+        "error",
+        error instanceof Error
+          ? error.message
+          : "Unable to update hero admissions text."
+      );
+    } finally {
+      setHeroContentSaving(false);
     }
   };
 
@@ -495,7 +586,7 @@ export function AdminPanel() {
 
     try {
       const payload = await apiRequest<{ message?: string; event: EventItem }>(
-        "/api/admin/events",
+        "/api/events",
         {
           method: "POST",
           body: JSON.stringify(eventForm)
@@ -532,7 +623,7 @@ export function AdminPanel() {
 
     try {
       const payload = await apiRequest<{ message?: string; event: EventItem }>(
-        `/api/admin/events/${editingEventId}`,
+        `/api/events/${editingEventId}`,
         {
           method: "PUT",
           body: JSON.stringify(eventEditForm)
@@ -563,7 +654,7 @@ export function AdminPanel() {
       message: "This event will be removed permanently.",
       confirmLabel: "Delete",
       action: async () => {
-        const payload = await apiRequest<ApiMessage>(`/api/admin/events/${id}`, {
+        const payload = await apiRequest<ApiMessage>(`/api/events/${id}`, {
           method: "DELETE"
         });
         setEvents((current) => current.filter((item) => item.id !== id));
@@ -591,7 +682,7 @@ export function AdminPanel() {
     setEvents(reordered);
 
     try {
-      await apiRequest<ApiMessage>("/api/admin/events", {
+      await apiRequest<ApiMessage>("/api/events", {
         method: "PATCH",
         body: JSON.stringify({ ids: reordered.map((item) => item.id) })
       });
@@ -608,7 +699,7 @@ export function AdminPanel() {
 
     try {
       const payload = await apiRequest<{ message?: string; notice: NoticeItem }>(
-        "/api/admin/notices",
+        "/api/notices",
         {
           method: "POST",
           body: JSON.stringify(noticeForm)
@@ -643,7 +734,7 @@ export function AdminPanel() {
 
     try {
       const payload = await apiRequest<{ message?: string; notice: NoticeItem }>(
-        `/api/admin/notices/${editingNoticeId}`,
+        `/api/notices/${editingNoticeId}`,
         {
           method: "PUT",
           body: JSON.stringify(noticeEditForm)
@@ -672,7 +763,7 @@ export function AdminPanel() {
       message: "This notice will be removed permanently.",
       confirmLabel: "Delete",
       action: async () => {
-        const payload = await apiRequest<ApiMessage>(`/api/admin/notices/${id}`, {
+        const payload = await apiRequest<ApiMessage>(`/api/notices/${id}`, {
           method: "DELETE"
         });
         setNotices((current) => current.filter((item) => item.id !== id));
@@ -700,7 +791,7 @@ export function AdminPanel() {
     setNotices(reordered);
 
     try {
-      await apiRequest<ApiMessage>("/api/admin/notices", {
+      await apiRequest<ApiMessage>("/api/notices", {
         method: "PATCH",
         body: JSON.stringify({ ids: reordered.map((item) => item.id) })
       });
@@ -783,6 +874,7 @@ export function AdminPanel() {
         JSON.stringify(
           uploadDrafts.map((draft) => ({
             alt: draft.alt,
+            title: draft.alt,
             category: draft.category
           }))
         )
@@ -791,7 +883,7 @@ export function AdminPanel() {
       const payload = await apiRequest<{
         message?: string;
         images?: GalleryImage[];
-      }>("/api/admin/images", {
+      }>("/api/upload", {
         method: "POST",
         body: formData
       });
@@ -799,6 +891,7 @@ export function AdminPanel() {
       const uploaded = payload.images ?? [];
       setImages((current) => [...uploaded, ...current]);
       clearUploadDrafts();
+      broadcastGalleryUpdated();
       addToast(
         "success",
         payload.message ?? `${uploaded.length} image(s) uploaded.`
@@ -843,6 +936,7 @@ export function AdminPanel() {
       );
 
       setEditingImageId(null);
+      broadcastGalleryUpdated();
       addToast("success", payload.message ?? "Image updated.");
     } catch (error) {
       addToast(
@@ -858,10 +952,11 @@ export function AdminPanel() {
       message: "This image will be removed from gallery permanently.",
       confirmLabel: "Delete",
       action: async () => {
-        const payload = await apiRequest<ApiMessage>(`/api/admin/images/${id}`, {
+        const payload = await apiRequest<ApiMessage>(`/api/images/${id}`, {
           method: "DELETE"
         });
         setImages((current) => current.filter((item) => item.id !== id));
+        broadcastGalleryUpdated();
         addToast("success", payload.message ?? "Image deleted.");
       }
     });
@@ -890,6 +985,7 @@ export function AdminPanel() {
         method: "PATCH",
         body: JSON.stringify({ ids: reordered.map((item) => item.id) })
       });
+      broadcastGalleryUpdated();
     } catch (error) {
       setImages(previous);
       addToast(
@@ -938,7 +1034,7 @@ export function AdminPanel() {
 
   if (!authenticated) {
     return (
-      <section className="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+      <section className="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-xl backdrop-blur sm:p-6 dark:border-slate-700 dark:bg-slate-900/80">
         <div className="mb-6 flex items-center gap-3">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white">
             <Shield className="h-6 w-6" />
@@ -960,7 +1056,7 @@ export function AdminPanel() {
             value={pin}
             onChange={(event) => setPin(event.target.value)}
             placeholder="Admin PIN"
-            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="min-h-[44px] w-full rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           />
 
           {pinError ? (
@@ -984,12 +1080,12 @@ export function AdminPanel() {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white/85 shadow-xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
+    <section className="relative w-full overflow-hidden rounded-3xl border border-slate-200 bg-white/85 shadow-xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/80">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 md:hidden dark:border-slate-700">
         <button
           type="button"
           onClick={() => setSidebarOpen((current) => !current)}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700"
         >
           <Menu className="h-4 w-4" />
           Menu
@@ -997,7 +1093,7 @@ export function AdminPanel() {
         <button
           type="button"
           onClick={onLogout}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700"
         >
           <LogOut className="h-4 w-4" />
           Logout
@@ -1006,17 +1102,17 @@ export function AdminPanel() {
 
       <div className="flex flex-col md:flex-row">
         <aside
-          className={`${sidebarOpen ? "block" : "hidden"} border-b border-slate-200 bg-white/70 p-4 md:sticky md:top-24 md:block md:h-[calc(100vh-7rem)] md:w-72 md:shrink-0 md:border-b-0 md:border-r dark:border-slate-700 dark:bg-slate-900/70`}
+          className={`${sidebarOpen ? "block" : "hidden"} border-b border-slate-200 bg-white/70 p-4 md:sticky md:top-24 md:block md:h-[calc(100vh-7rem)] md:w-72 md:shrink-0 md:overflow-y-auto md:border-b-0 md:border-r dark:border-slate-700 dark:bg-slate-900/70`}
         >
-          <div className="mb-5 flex items-center gap-3 rounded-xl bg-blue-600/10 p-3">
+          <div className="mb-5 flex min-w-0 items-center gap-3 rounded-xl bg-blue-600/10 p-3">
             <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-blue-600 text-white">
               <Shield className="h-5 w-5" />
             </div>
-            <div>
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <div className="min-w-0">
+              <h2 className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
                 DM Public School
               </h2>
-              <p className="text-xs text-slate-600 dark:text-slate-300">
+              <p className="truncate text-xs text-slate-600 dark:text-slate-300">
                 Admin Dashboard
               </p>
             </div>
@@ -1035,7 +1131,7 @@ export function AdminPanel() {
                     setActiveSection(item.key);
                     setSidebarOpen(false);
                   }}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
+                  className={`flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
                     isActive
                       ? "bg-blue-600 text-white shadow-md"
                       : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -1058,24 +1154,33 @@ export function AdminPanel() {
           </button>
         </aside>
 
-        <div className="flex-1 p-4 sm:p-6 lg:p-8">
+        <div className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
           <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            <div className="min-w-0">
+              <h1 className="break-words text-xl font-semibold text-slate-900 sm:text-2xl dark:text-slate-100">
                 {sidebarItems.find((item) => item.key === activeSection)?.label}
               </h1>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
+              <p className="break-words text-sm text-slate-600 dark:text-slate-300">
                 Manage school content with secure controls and real-time updates.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={loadDashboardData}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              {loadingData ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Refresh Data
-            </button>
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+              <Link
+                href="/"
+                className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 sm:w-auto dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Home
+              </Link>
+              <button
+                type="button"
+                onClick={loadDashboardData}
+                className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 sm:w-auto dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                {loadingData ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Refresh Data
+              </button>
+            </div>
           </header>
 
           {activeSection === "overview" ? (
@@ -1112,21 +1217,21 @@ export function AdminPanel() {
                   <button
                     type="button"
                     onClick={() => setActiveSection("events")}
-                    className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                    className="min-h-[44px] rounded-full bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
                   >
                     Add Event
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveSection("notices")}
-                    className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                    className="min-h-[44px] rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
                   >
                     Add Notice
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveSection("gallery")}
-                    className="rounded-full bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-700"
+                    className="min-h-[44px] rounded-full bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700"
                   >
                     Upload Images
                   </button>
@@ -1217,7 +1322,7 @@ export function AdminPanel() {
                     }
                     placeholder="Title"
                     required
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                   <input
                     type="date"
@@ -1229,7 +1334,7 @@ export function AdminPanel() {
                       }))
                     }
                     required
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                   <input
                     value={eventForm.location}
@@ -1241,7 +1346,7 @@ export function AdminPanel() {
                     }
                     placeholder="Location"
                     required
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                   <input
                     value={eventForm.category}
@@ -1253,7 +1358,7 @@ export function AdminPanel() {
                     }
                     placeholder="Category"
                     required
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                   <select
                     value={eventForm.type}
@@ -1263,14 +1368,14 @@ export function AdminPanel() {
                         type: event.target.value as EventFormState["type"]
                       }))
                     }
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                   >
                     <option value="event">Event</option>
                     <option value="exam">Exam</option>
                   </select>
                   <button
                     type="submit"
-                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
                   >
                     <Plus className="h-4 w-4" />
                     Add Event
@@ -1287,7 +1392,7 @@ export function AdminPanel() {
                   }
                   placeholder="Description"
                   required
-                  className="mt-3 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  className="mt-3 w-full min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                 />
               </form>
 
@@ -1315,22 +1420,22 @@ export function AdminPanel() {
                         <SortableListItem key={item.id} id={item.id}>
                           <div className="space-y-3">
                             <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div>
-                                <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                              <div className="min-w-0">
+                                <p className="break-words text-base font-semibold text-slate-900 dark:text-slate-100">
                                   {item.title}
                                 </p>
-                                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                                <p className="mt-1 break-words text-sm text-slate-600 dark:text-slate-300">
                                   {item.description}
                                 </p>
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center justify-end gap-2">
                                 <span className="rounded-full border border-slate-200 px-2 py-0.5 text-xs font-semibold uppercase text-slate-700 dark:border-slate-700 dark:text-slate-200">
                                   {item.type}
                                 </span>
                                 <button
                                   type="button"
                                   onClick={() => startEditEvent(item)}
-                                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium dark:border-slate-700"
+                                  className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium dark:border-slate-700"
                                 >
                                   <Pencil className="h-3.5 w-3.5" />
                                   Edit
@@ -1338,7 +1443,7 @@ export function AdminPanel() {
                                 <button
                                   type="button"
                                   onClick={() => deleteEvent(item.id)}
-                                  className="inline-flex items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1.5 text-xs font-medium text-rose-700 dark:border-rose-800 dark:text-rose-300"
+                                  className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1.5 text-xs font-medium text-rose-700 dark:border-rose-800 dark:text-rose-300"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
                                   Delete
@@ -1347,11 +1452,11 @@ export function AdminPanel() {
                             </div>
 
                             <div className="flex flex-wrap gap-3 text-xs text-slate-600 dark:text-slate-300">
-                              <span className="inline-flex items-center gap-1">
+                              <span className="inline-flex break-words items-center gap-1">
                                 <CalendarDays className="h-3.5 w-3.5" />
                                 {formatPrettyDate(item.date)}
                               </span>
-                              <span className="inline-flex items-center gap-1">
+                              <span className="inline-flex break-words items-center gap-1">
                                 <MapPin className="h-3.5 w-3.5" />
                                 {item.location}
                               </span>
@@ -1370,7 +1475,7 @@ export function AdminPanel() {
                                       title: event.target.value
                                     }))
                                   }
-                                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                  className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                                 />
                                 <input
                                   type="date"
@@ -1381,7 +1486,7 @@ export function AdminPanel() {
                                       date: event.target.value
                                     }))
                                   }
-                                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                  className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                                 />
                                 <input
                                   value={eventEditForm.location}
@@ -1391,7 +1496,7 @@ export function AdminPanel() {
                                       location: event.target.value
                                     }))
                                   }
-                                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                  className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                                 />
                                 <input
                                   value={eventEditForm.category}
@@ -1401,7 +1506,7 @@ export function AdminPanel() {
                                       category: event.target.value
                                     }))
                                   }
-                                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                  className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                                 />
                                 <select
                                   value={eventEditForm.type}
@@ -1411,7 +1516,7 @@ export function AdminPanel() {
                                       type: event.target.value as EventFormState["type"]
                                     }))
                                   }
-                                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                  className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                                 >
                                   <option value="event">Event</option>
                                   <option value="exam">Exam</option>
@@ -1425,20 +1530,20 @@ export function AdminPanel() {
                                       description: event.target.value
                                     }))
                                   }
-                                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                  className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                                 />
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
                                   <button
                                     type="button"
                                     onClick={saveEventEdit}
-                                    className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
+                                    className="min-h-[36px] rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
                                   >
                                     Save
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setEditingEventId(null)}
-                                    className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold dark:border-slate-700"
+                                    className="min-h-[36px] rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold dark:border-slate-700"
                                   >
                                     Cancel
                                   </button>
@@ -1481,7 +1586,7 @@ export function AdminPanel() {
                     }
                     placeholder="Title"
                     required
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                   <input
                     type="date"
@@ -1493,7 +1598,7 @@ export function AdminPanel() {
                       }))
                     }
                     required
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                   <select
                     value={noticeForm.type}
@@ -1503,7 +1608,7 @@ export function AdminPanel() {
                         type: event.target.value as NoticeType
                       }))
                     }
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                   >
                     <option value="daily">Daily</option>
                     <option value="holiday">Holiday</option>
@@ -1511,7 +1616,7 @@ export function AdminPanel() {
                   </select>
                   <button
                     type="submit"
-                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
                   >
                     <Plus className="h-4 w-4" />
                     Add Notice
@@ -1528,7 +1633,7 @@ export function AdminPanel() {
                   }
                   placeholder="Notice content"
                   required
-                  className="mt-3 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  className="mt-3 w-full min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                 />
               </form>
 
@@ -1556,15 +1661,15 @@ export function AdminPanel() {
                         <SortableListItem key={item.id} id={item.id}>
                           <div className="space-y-3">
                             <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <p className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                              <div className="min-w-0">
+                                <p className="break-words text-base font-semibold text-slate-900 dark:text-slate-100">
                                   {item.title}
                                 </p>
-                                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                                <p className="mt-1 break-words text-sm text-slate-600 dark:text-slate-300">
                                   {item.content}
                                 </p>
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center justify-end gap-2">
                                 <span
                                   className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase ${noticeTypeStyles[item.type]}`}
                                 >
@@ -1573,7 +1678,7 @@ export function AdminPanel() {
                                 <button
                                   type="button"
                                   onClick={() => startEditNotice(item)}
-                                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium dark:border-slate-700"
+                                  className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium dark:border-slate-700"
                                 >
                                   <Pencil className="h-3.5 w-3.5" />
                                   Edit
@@ -1581,7 +1686,7 @@ export function AdminPanel() {
                                 <button
                                   type="button"
                                   onClick={() => deleteNotice(item.id)}
-                                  className="inline-flex items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1.5 text-xs font-medium text-rose-700 dark:border-rose-800 dark:text-rose-300"
+                                  className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-rose-200 px-2.5 py-1.5 text-xs font-medium text-rose-700 dark:border-rose-800 dark:text-rose-300"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
                                   Delete
@@ -1603,7 +1708,7 @@ export function AdminPanel() {
                                       title: event.target.value
                                     }))
                                   }
-                                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                  className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                                 />
                                 <input
                                   type="date"
@@ -1614,7 +1719,7 @@ export function AdminPanel() {
                                       date: event.target.value
                                     }))
                                   }
-                                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                  className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                                 />
                                 <select
                                   value={noticeEditForm.type}
@@ -1624,7 +1729,7 @@ export function AdminPanel() {
                                       type: event.target.value as NoticeType
                                     }))
                                   }
-                                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                  className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                                 >
                                   <option value="daily">Daily</option>
                                   <option value="holiday">Holiday</option>
@@ -1639,20 +1744,20 @@ export function AdminPanel() {
                                       content: event.target.value
                                     }))
                                   }
-                                  className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                  className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                                 />
-                                <div className="flex gap-2">
+                                <div className="flex flex-wrap gap-2">
                                   <button
                                     type="button"
                                     onClick={saveNoticeEdit}
-                                    className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white"
+                                    className="min-h-[36px] rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white"
                                   >
                                     Save
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setEditingNoticeId(null)}
-                                    className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold dark:border-slate-700"
+                                    className="min-h-[36px] rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold dark:border-slate-700"
                                   >
                                     Cancel
                                   </button>
@@ -1705,7 +1810,7 @@ export function AdminPanel() {
                   <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
                     Drop files here or choose from your device
                   </p>
-                  <label className="mt-3 inline-flex cursor-pointer items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white">
+                  <label className="mt-3 inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white">
                     Select Images
                     <input
                       type="file"
@@ -1745,7 +1850,7 @@ export function AdminPanel() {
                               )
                             }
                             placeholder="Caption"
-                            className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                            className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                           />
                           <input
                             value={draft.category}
@@ -1759,12 +1864,12 @@ export function AdminPanel() {
                               )
                             }
                             placeholder="Category"
-                            className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                            className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                           />
                           <button
                             type="button"
                             onClick={() => removeUploadDraft(draft.id)}
-                            className="inline-flex items-center justify-center rounded-md border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:border-rose-800 dark:text-rose-300"
+                            className="inline-flex min-h-[36px] items-center justify-center rounded-md border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:border-rose-800 dark:text-rose-300"
                           >
                             Remove
                           </button>
@@ -1777,7 +1882,7 @@ export function AdminPanel() {
                         type="button"
                         onClick={onUploadDrafts}
                         disabled={uploading}
-                        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                        className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
                       >
                         {uploading ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -1789,7 +1894,7 @@ export function AdminPanel() {
                       <button
                         type="button"
                         onClick={clearUploadDrafts}
-                        className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-slate-700"
+                        className="min-h-[44px] rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold dark:border-slate-700"
                       >
                         Clear
                       </button>
@@ -1832,7 +1937,7 @@ export function AdminPanel() {
                             <button
                               type="button"
                               onClick={() => startEditImage(item)}
-                              className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-semibold dark:border-slate-700"
+                              className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-semibold dark:border-slate-700"
                             >
                               <Pencil className="h-3.5 w-3.5" />
                               Edit
@@ -1840,7 +1945,7 @@ export function AdminPanel() {
                             <button
                               type="button"
                               onClick={() => deleteImage(item.id)}
-                              className="inline-flex items-center gap-1 rounded-md border border-rose-200 px-2.5 py-1.5 text-xs font-semibold text-rose-700 dark:border-rose-800 dark:text-rose-300"
+                              className="inline-flex min-h-[36px] items-center gap-1 rounded-md border border-rose-200 px-2.5 py-1.5 text-xs font-semibold text-rose-700 dark:border-rose-800 dark:text-rose-300"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                               Delete
@@ -1857,7 +1962,7 @@ export function AdminPanel() {
                                     alt: event.target.value
                                   }))
                                 }
-                                className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                               />
                               <input
                                 value={imageEditForm.category}
@@ -1867,20 +1972,20 @@ export function AdminPanel() {
                                     category: event.target.value
                                   }))
                                 }
-                                className="rounded-md border border-slate-200 px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                                className="min-h-[40px] rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
                               />
-                              <div className="flex gap-2">
+                              <div className="flex flex-wrap gap-2">
                                 <button
                                   type="button"
                                   onClick={saveImageEdit}
-                                  className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
+                                  className="min-h-[36px] rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
                                 >
                                   Save
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setEditingImageId(null)}
-                                  className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold dark:border-slate-700"
+                                  className="min-h-[36px] rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold dark:border-slate-700"
                                 >
                                   Cancel
                                 </button>
@@ -1900,6 +2005,22 @@ export function AdminPanel() {
                 </SortableContext>
               </DndContext>
             </div>
+          ) : null}
+
+          {activeSection === "staff" ? (
+            <AdminStaffManager
+              apiRequest={apiRequest}
+              addToast={addToast}
+              requestConfirm={requestConfirm}
+            />
+          ) : null}
+
+          {activeSection === "documents" ? (
+            <AdminDocumentsManager
+              apiRequest={apiRequest}
+              addToast={addToast}
+              requestConfirm={requestConfirm}
+            />
           ) : null}
 
           {activeSection === "settings" ? (
@@ -1927,7 +2048,7 @@ export function AdminPanel() {
                       }))
                     }
                     placeholder="Current PIN"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="w-full min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                   <input
                     type="password"
@@ -1940,19 +2061,56 @@ export function AdminPanel() {
                       }))
                     }
                     placeholder="New PIN"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                    className="w-full min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={pinChangeLoading}
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
                 >
                   {pinChangeLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : null}
                   {pinChangeLoading ? "Updating..." : "Update PIN"}
+                </button>
+              </form>
+
+              <form
+                onSubmit={saveHeroAdmissionsText}
+                className="max-w-xl rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900"
+              >
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Hero Admissions Badge
+                </h3>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  Update the homepage admissions badge text.
+                </p>
+
+                <div className="mt-4 space-y-3">
+                  <input
+                    value={heroAdmissionsText}
+                    onChange={(event) => setHeroAdmissionsText(event.target.value)}
+                    placeholder="Admissions Open 2026"
+                    required
+                    className="w-full min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={heroContentSaving || heroContentLoading}
+                  className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+                >
+                  {heroContentSaving || heroContentLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : null}
+                  {heroContentSaving
+                    ? "Saving..."
+                    : heroContentLoading
+                      ? "Loading..."
+                      : "Save Admissions Text"}
                 </button>
               </form>
 
@@ -1966,7 +2124,7 @@ export function AdminPanel() {
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold dark:border-slate-700"
+                  className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold sm:w-auto dark:border-slate-700"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
@@ -1990,7 +2148,7 @@ export function AdminPanel() {
               <button
                 type="button"
                 onClick={() => setConfirmState(null)}
-                className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold dark:border-slate-700"
+                className="min-h-[36px] rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold dark:border-slate-700"
               >
                 Cancel
               </button>
@@ -1998,7 +2156,7 @@ export function AdminPanel() {
                 type="button"
                 onClick={runConfirmAction}
                 disabled={confirmLoading}
-                className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex min-h-[36px] items-center gap-2 rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {confirmLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {confirmState.confirmLabel}
@@ -2008,11 +2166,11 @@ export function AdminPanel() {
         </div>
       ) : null}
 
-      <div className="fixed right-4 top-4 z-[90] space-y-2">
+      <div className="fixed left-4 right-4 top-4 z-[90] space-y-2 sm:left-auto sm:right-4">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`inline-flex min-w-[260px] items-center gap-2 rounded-lg border px-3 py-2 text-sm shadow-md ${
+            className={`inline-flex w-full max-w-[calc(100vw-2rem)] items-center gap-2 rounded-lg border px-3 py-2 text-sm shadow-md sm:min-w-[260px] sm:max-w-none ${
               toast.type === "success"
                 ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                 : "border-rose-200 bg-rose-50 text-rose-700"
@@ -2042,3 +2200,7 @@ export function AdminPanel() {
     </section>
   );
 }
+
+
+
+

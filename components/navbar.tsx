@@ -41,24 +41,24 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 py-4 transition-all duration-300">
       <div className="section-shell">
         <div
-          className={`flex items-center justify-between gap-4 rounded-2xl border px-4 py-2 shadow-xl backdrop-blur-lg transition-all duration-300 ${
+          className={`flex items-center justify-between gap-2 rounded-2xl border px-3 py-2 shadow-xl backdrop-blur-lg transition-all duration-300 sm:gap-4 sm:px-4 ${
             scrolled
               ? "border-slate-200/80 bg-white/85"
               : "border-white/20 bg-white/20"
           }`}
         >
-          <Link href="#home" className="flex items-center gap-3">
+          <Link href="#home" className="flex min-w-0 flex-1 items-center gap-3 lg:flex-none">
             <Logo compact mode={scrolled ? "dark" : "light"} />
-            <div>
+            <div className="min-w-0">
               <p
-                className={`text-sm font-semibold tracking-wide ${
+                className={`truncate text-xs font-semibold tracking-wide sm:text-sm ${
                   scrolled ? "text-slate-900" : "text-white drop-shadow-md"
                 }`}
               >
                 {siteConfig.name}
               </p>
               <p
-                className={`text-xs ${
+                className={`truncate text-[11px] sm:text-xs ${
                   scrolled ? "text-slate-600" : "text-white/85"
                 }`}
               >
@@ -119,7 +119,7 @@ export function Navbar() {
 
           <button
             type="button"
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 hover:scale-105 lg:hidden ${
+            className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-300 hover:scale-105 lg:hidden ${
               scrolled
                 ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                 : "border-white/20 bg-white/10 text-white hover:bg-white/20"
@@ -144,7 +144,7 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-xl px-3 py-2 text-sm font-medium transition-all duration-300 ${
+              className={`rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 ${
                 activeLink === link.href
                   ? "bg-blue-600 text-white"
                   : scrolled
@@ -157,11 +157,11 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 hover:scale-105 ${
+              className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-300 hover:scale-105 ${
                 scrolled
                   ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                   : "border-white/20 bg-white/10 text-white hover:bg-white/20"
@@ -177,7 +177,7 @@ export function Navbar() {
             <Link
               href="/admin"
               onClick={() => setMobileOpen(false)}
-              className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-blue-700"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-blue-700"
             >
               Admin
             </Link>

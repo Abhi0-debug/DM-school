@@ -10,11 +10,11 @@ export function SectionHeading({
   align = "left"
 }: SectionHeadingProps) {
   return (
-    <div className={align === "center" ? "text-center" : "text-left"}>
+    <div className={align === "center" ? "min-w-0 text-center" : "min-w-0 text-left"}>
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-600">
         {title}
       </p>
-      <h2 className="mt-3 text-2xl font-semibold text-slate-900 sm:text-3xl dark:text-white">
+      <h2 className="mt-3 break-words text-2xl font-semibold text-slate-900 sm:text-3xl dark:text-white">
         {subtitle}
       </h2>
     </div>

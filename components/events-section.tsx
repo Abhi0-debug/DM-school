@@ -45,12 +45,12 @@ export function EventsSection({ initialEvents }: EventsSectionProps) {
     <section id="events" className="section-shell section-spacing">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <SectionHeading title="Events" subtitle="Upcoming Events & Exam Schedule" />
-        <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
-          <span>Filter month</span>
+        <label className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 sm:w-auto sm:justify-start dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+          <span className="shrink-0">Filter month</span>
           <select
             value={monthFilter}
             onChange={(event) => setMonthFilter(event.target.value)}
-            className="bg-transparent outline-none"
+            className="min-w-0 bg-transparent outline-none"
           >
             <option value="all">All</option>
             {monthOptions.map((month) => (
@@ -88,14 +88,14 @@ export function EventsSection({ initialEvents }: EventsSectionProps) {
               <h3 className="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {event.title}
               </h3>
-              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+              <p className="mt-3 break-words text-sm text-slate-600 dark:text-slate-300">
                 {event.description}
               </p>
               <div className="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-200">
-                <p className="inline-flex items-center gap-2">
+                <p className="inline-flex break-words items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-brand-600" /> {formatDate(event.date)}
                 </p>
-                <p className="inline-flex items-center gap-2">
+                <p className="inline-flex break-words items-center gap-2">
                   <MapPin className="h-4 w-4 text-brand-600" /> {event.location}
                 </p>
               </div>
@@ -120,14 +120,14 @@ export function EventsSection({ initialEvents }: EventsSectionProps) {
                 className="flex flex-col gap-1 rounded-xl border border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-slate-700"
               >
                 <div>
-                  <p className="font-medium text-slate-900 dark:text-slate-100">
+                  <p className="break-words font-medium text-slate-900 dark:text-slate-100">
                     {exam.title}
                   </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
+                  <p className="break-words text-sm text-slate-600 dark:text-slate-300">
                     {exam.description}
                   </p>
                 </div>
-                <p className="text-sm font-semibold text-brand-700 dark:text-brand-300">
+                <p className="text-sm font-semibold text-brand-700 dark:text-brand-300 sm:text-right">
                   {formatDate(exam.date)}
                 </p>
               </div>

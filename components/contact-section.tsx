@@ -100,17 +100,17 @@ export function ContactSection() {
 
           <div className="mt-6 space-y-3">
             <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
-              <p className="inline-flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+              <p className="inline-flex break-all items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
                 <Mail className="h-4 w-4 text-brand-600" /> {siteConfig.contact.email}
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
-              <p className="inline-flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+              <p className="inline-flex break-words items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
                 <Phone className="h-4 w-4 text-brand-600" /> {siteConfig.contact.phone}
               </p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
-              <p className="inline-flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
+              <p className="inline-flex break-words items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
                 <MapPin className="h-4 w-4 text-brand-600" /> {siteConfig.contact.address}
               </p>
             </div>
@@ -119,7 +119,7 @@ export function ContactSection() {
 
         <form
           onSubmit={onSubmit}
-          className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft dark:border-slate-700 dark:bg-slate-900"
+          className="rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:p-5 dark:border-slate-700 dark:bg-slate-900"
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-1">

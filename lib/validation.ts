@@ -92,3 +92,17 @@ export const navConfigSchema = z.object({
   staff: z.boolean(),
   contact: z.boolean()
 });
+
+export const teacherTextSchema = z.object({
+  name: z.string().min(2, "Teacher name should be at least 2 characters."),
+  subject: z.string().min(2, "Subject is required."),
+  description: z.string().min(8, "Description should be at least 8 characters.")
+});
+
+export const documentTextSchema = z.object({
+  title: z.string().min(3, "Title should be at least 3 characters.")
+});
+
+export const heroContentSchema = z.object({
+  admissionsText: z.string().min(3, "Admissions text should be at least 3 characters.")
+});
