@@ -32,7 +32,14 @@ const initialStaffForm: StaffFormState = {
   bio: ""
 };
 
-function toStaffMember(teacher: Teacher): StaffMember {
+type StaffApiPayload = StaffMember | Teacher;
+
+function toStaffMember(item: StaffApiPayload): StaffMember {
+  if ("bio" in item && "photo" in item) {
+    return item;
+  }
+
+  const teacher = item as Teacher;
   return {
     id: teacher.id,
     name: teacher.name,
@@ -70,12 +77,14 @@ export function AdminStaffManager({
     const loadStaff = async () => {
       setLoading(true);
       try {
-        const payload = await apiRequest<{ teachers?: Teacher[] }>("/api/teachers", {
-          cache: "no-store"
-        });
+        const payload = await apiRequest<{
+          staff?: StaffApiPayload[];
+          teachers?: Teacher[];
+        }>("/api/admin/staff", { cache: "no-store" });
 
         if (mounted) {
-          setStaff((payload.teachers ?? []).map(toStaffMember));
+          const records = payload.staff ?? payload.teachers ?? [];
+          setStaff(records.map(toStaffMember));
         }
       } catch (error) {
         addToast(
@@ -144,15 +153,24 @@ export function AdminStaffManager({
       formData.append("description", staffForm.bio);
       formData.append("image", staffImageFile);
 
-      const payload = await apiRequest<{ message?: string; teacher: Teacher }>(
-        "/api/teachers",
+      const payload = await apiRequest<{
+        message?: string;
+        member?: StaffApiPayload;
+        teacher?: Teacher;
+      }>(
+        "/api/admin/staff",
         {
           method: "POST",
           body: formData
         }
       );
 
-      setStaff((current) => [toStaffMember(payload.teacher), ...current]);
+      const created = payload.member ?? payload.teacher;
+      if (!created) {
+        throw new Error("Invalid create staff response.");
+      }
+
+      setStaff((current) => [toStaffMember(created), ...current]);
       setStaffForm(initialStaffForm);
       setStaffImageFile(null);
       revokeUrl(staffImagePreview);
@@ -192,17 +210,26 @@ export function AdminStaffManager({
         formData.append("image", editImageFile);
       }
 
-      const payload = await apiRequest<{ message?: string; teacher: Teacher }>(
-        `/api/teachers/${editingId}`,
+      const payload = await apiRequest<{
+        message?: string;
+        member?: StaffApiPayload;
+        teacher?: Teacher;
+      }>(
+        `/api/admin/staff/${editingId}`,
         {
           method: "PUT",
           body: formData
         }
       );
 
+      const updated = payload.member ?? payload.teacher;
+      if (!updated) {
+        throw new Error("Invalid update staff response.");
+      }
+
       setStaff((current) =>
         current.map((item) =>
-          item.id === editingId ? toStaffMember(payload.teacher) : item
+          item.id === editingId ? toStaffMember(updated) : item
         )
       );
 
@@ -225,9 +252,12 @@ export function AdminStaffManager({
       message: "This staff member will be removed permanently.",
       confirmLabel: "Delete",
       action: async () => {
-        const payload = await apiRequest<{ message?: string }>(`/api/teachers/${id}`, {
-          method: "DELETE"
-        });
+        const payload = await apiRequest<{ message?: string }>(
+          `/api/admin/staff/${id}`,
+          {
+            method: "DELETE"
+          }
+        );
         setStaff((current) => current.filter((item) => item.id !== id));
         addToast("success", payload.message ?? "Staff member deleted.");
       }
