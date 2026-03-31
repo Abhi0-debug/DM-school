@@ -2,7 +2,8 @@ import { MessageCircleMore } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 
 export function WhatsAppButton() {
-  const phone = siteConfig.socials.whatsapp.replace(/\D/g, "");
+  const rawPhone = siteConfig.socials.whatsapp.replace(/\D/g, "");
+  const phone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
   const href = `https://wa.me/${phone}?text=Hello%20DM%20Public%20School`;
 
   return (

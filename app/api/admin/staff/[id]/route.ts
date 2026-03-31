@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthorized } from "@/lib/admin-auth";
 import { deleteTeacher, parseTeacherFormData, updateTeacher } from "@/lib/teacher-service";
+import { removeStaffPdfForStaff } from "@/lib/staff-pdf-service";
 import { teacherTextSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -64,7 +65,9 @@ export async function PUT(
       subject: updated.subject,
       bio: updated.description,
       photo: updated.imageUrl,
-      publicId: updated.publicId
+      publicId: updated.publicId,
+      pdfUrl: updated.pdfUrl,
+      pdfTitle: updated.pdfTitle
     };
 
     return NextResponse.json({ message: "Staff member updated.", member });
@@ -90,6 +93,8 @@ export async function DELETE(
     if (!removed) {
       return NextResponse.json({ message: "Staff member not found." }, { status: 404 });
     }
+
+    await removeStaffPdfForStaff(id).catch(() => undefined);
 
     return NextResponse.json({ message: "Staff member deleted." });
   } catch (error) {

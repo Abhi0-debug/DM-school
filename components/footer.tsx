@@ -1,11 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Instagram, MessageCircleMore } from "lucide-react";
+import { Instagram, MessageCircleMore, Youtube } from "lucide-react";
 import { navigationLinks } from "@/lib/constants";
 import { siteConfig } from "@/lib/site-config";
 
 export function Footer() {
-  const phone = siteConfig.socials.whatsapp.replace(/\D/g, "");
+  const rawPhone = siteConfig.socials.whatsapp.replace(/\D/g, "");
+  const phone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
   const whatsappHref = `https://wa.me/${phone}?text=Hello%20DM%20Public%20School`;
 
   return (
@@ -59,10 +60,23 @@ export function Footer() {
             <MessageCircleMore className="h-4 w-4" />
             WhatsApp
           </a>
+          <a
+            href={siteConfig.socials.youtube}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
+            aria-label="YouTube"
+          >
+            <Youtube className="h-4 w-4" />
+            YouTube
+          </a>
         </div>
 
         <p className="break-words text-xs text-slate-500 dark:text-slate-400">
-          (c) {new Date().getFullYear()} DM Public School. All rights reserved.
+          © {new Date().getFullYear()} DM Public School. All rights reserved.
+          <span className="mt-1 block">
+            +91 8339012220, +91 9938702859, +91 8658252927 (Office), +91 8658252927 (WhatsApp)
+          </span>
         </p>
       </div>
     </footer>

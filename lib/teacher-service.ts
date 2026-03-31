@@ -5,6 +5,7 @@ import {
   uploadImageToCloudinary
 } from "@/lib/cloudinary";
 import { prisma } from "@/lib/prisma";
+import { getStaffPdfRecordMapByStaffId } from "@/lib/staff-pdf-service";
 import { StaffMember, Teacher } from "@/lib/types";
 
 interface TeacherInput {
@@ -26,25 +27,35 @@ function getTeachersFolder() {
   return `${baseFolder}/teachers`;
 }
 
-function toTeacher(record: PrismaTeacher): Teacher {
+function toTeacher(
+  record: PrismaTeacher,
+  pdf?: { publicUrl: string; title: string }
+): Teacher {
   return {
     id: record.id,
     name: record.name,
     subject: record.subject,
     description: record.description,
     imageUrl: record.imageUrl,
-    publicId: record.publicId
+    publicId: record.publicId,
+    pdfUrl: pdf?.publicUrl,
+    pdfTitle: pdf?.title
   };
 }
 
-function toStaffMember(record: PrismaTeacher): StaffMember {
+function toStaffMember(
+  record: PrismaTeacher,
+  pdf?: { publicUrl: string; title: string }
+): StaffMember {
   return {
     id: record.id,
     name: record.name,
     subject: record.subject,
     bio: record.description,
     photo: record.imageUrl,
-    publicId: record.publicId
+    publicId: record.publicId,
+    pdfUrl: pdf?.publicUrl,
+    pdfTitle: pdf?.title
   };
 }
 
@@ -69,19 +80,29 @@ export function parseTeacherFormData(
 }
 
 export async function listTeachers(): Promise<Teacher[]> {
-  const records = await prisma.teacher.findMany({
-    orderBy: [{ createdAt: "desc" }]
-  });
+  const [records, pdfMap] = await Promise.all([
+    prisma.teacher.findMany({
+      orderBy: [{ createdAt: "desc" }]
+    }),
+    getStaffPdfRecordMapByStaffId()
+  ]);
 
-  return records.map(toTeacher);
+  return records.map((record) =>
+    toTeacher(record, pdfMap.get(record.id))
+  );
 }
 
 export async function listTeacherStaffMembers(): Promise<StaffMember[]> {
-  const records = await prisma.teacher.findMany({
-    orderBy: [{ createdAt: "desc" }]
-  });
+  const [records, pdfMap] = await Promise.all([
+    prisma.teacher.findMany({
+      orderBy: [{ createdAt: "desc" }]
+    }),
+    getStaffPdfRecordMapByStaffId()
+  ]);
 
-  return records.map(toStaffMember);
+  return records.map((record) =>
+    toStaffMember(record, pdfMap.get(record.id))
+  );
 }
 
 export async function createTeacher(input: TeacherInput & { imageFile: File }) {
@@ -149,7 +170,8 @@ export async function updateTeacher(id: string, input: TeacherUpdateInput) {
       await deleteImageFromCloudinary(existing.publicId).catch(() => undefined);
     }
 
-    return toTeacher(updated);
+    const pdfMap = await getStaffPdfRecordMapByStaffId();
+    return toTeacher(updated, pdfMap.get(updated.id));
   } catch (error) {
     if (uploadedPublicId) {
       await deleteImageFromCloudinary(uploadedPublicId).catch(() => undefined);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthorized } from "@/lib/admin-auth";
 import { deleteTeacher, parseTeacherFormData, updateTeacher } from "@/lib/teacher-service";
+import { removeStaffPdfForStaff } from "@/lib/staff-pdf-service";
 import { teacherTextSchema } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -83,6 +84,8 @@ export async function DELETE(
     if (!removed) {
       return NextResponse.json({ message: "Teacher not found." }, { status: 404 });
     }
+
+    await removeStaffPdfForStaff(id).catch(() => undefined);
 
     return NextResponse.json({ message: "Teacher deleted.", teacher: removed });
   } catch (error) {

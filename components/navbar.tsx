@@ -5,7 +5,6 @@ import { Menu, Moon, Sun, X } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { navigationLinks } from "@/lib/constants";
-import { siteConfig } from "@/lib/site-config";
 import { Logo } from "@/components/logo";
 
 export function Navbar() {
@@ -47,22 +46,15 @@ export function Navbar() {
               : "border-white/20 bg-white/20"
           }`}
         >
-          <Link href="#home" className="flex min-w-0 flex-1 items-center gap-3 lg:flex-none">
-            <Logo compact mode={scrolled ? "dark" : "light"} />
-            <div className="min-w-0">
+          <Link href="#home" className="flex min-w-0 flex-1 items-center lg:flex-none">
+            <div className="flex min-w-0 flex-col items-center justify-center gap-1 text-center">
+              <Logo compact mode={scrolled ? "dark" : "light"} size={28} />
               <p
-                className={`truncate text-xs font-semibold tracking-wide sm:text-sm ${
+                className={`truncate text-xs font-semibold leading-none sm:text-sm ${
                   scrolled ? "text-slate-900" : "text-white drop-shadow-md"
                 }`}
               >
-                {siteConfig.name}
-              </p>
-              <p
-                className={`truncate text-[11px] sm:text-xs ${
-                  scrolled ? "text-slate-600" : "text-white/85"
-                }`}
-              >
-                {siteConfig.tagline}
+                DM Public School
               </p>
             </div>
           </Link>

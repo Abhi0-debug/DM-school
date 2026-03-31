@@ -3,6 +3,7 @@ import {
   ContactSettings,
   DocumentItem,
   EventItem,
+  GalleryDisplayConfig,
   GalleryImage,
   HeroSlide,
   NavConfig,
@@ -75,6 +76,18 @@ export async function getPublicGalleryImages() {
   } catch {
     return [];
   }
+}
+
+export async function getGalleryDisplayConfig(): Promise<GalleryDisplayConfig> {
+  const fallback: GalleryDisplayConfig = { mode: "grid" };
+  const config = await readJsonFile<GalleryDisplayConfig>(
+    "gallery-display.json",
+    fallback
+  );
+
+  return {
+    mode: config.mode === "slideshow" ? "slideshow" : "grid"
+  };
 }
 
 export async function getDocuments() {

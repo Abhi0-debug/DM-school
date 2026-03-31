@@ -23,6 +23,12 @@ export interface GalleryImage {
   sortOrder?: number;
 }
 
+export type GalleryDisplayMode = "grid" | "slideshow";
+
+export interface GalleryDisplayConfig {
+  mode: GalleryDisplayMode;
+}
+
 export interface EventItem {
   id: string;
   title: string;
@@ -50,6 +56,8 @@ export interface StaffMember {
   bio: string;
   photo: string;
   publicId?: string;
+  pdfUrl?: string;
+  pdfTitle?: string;
 }
 
 export interface Teacher {
@@ -59,6 +67,8 @@ export interface Teacher {
   description: string;
   imageUrl: string;
   publicId: string;
+  pdfUrl?: string;
+  pdfTitle?: string;
 }
 
 export interface ContactSettings {

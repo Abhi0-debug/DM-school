@@ -46,7 +46,9 @@ function toStaffMember(item: StaffApiPayload): StaffMember {
     subject: teacher.subject,
     bio: teacher.description,
     photo: teacher.imageUrl,
-    publicId: teacher.publicId
+    publicId: teacher.publicId,
+    pdfUrl: teacher.pdfUrl,
+    pdfTitle: teacher.pdfTitle
   };
 }
 
@@ -70,6 +72,10 @@ export function AdminStaffManager({
   const [staffEditForm, setStaffEditForm] = useState<StaffFormState>(initialStaffForm);
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [selectedStaffId, setSelectedStaffId] = useState("");
+  const [staffPdfTitle, setStaffPdfTitle] = useState("");
+  const [staffPdfFile, setStaffPdfFile] = useState<File | null>(null);
+  const [pdfUploading, setPdfUploading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -111,6 +117,15 @@ export function AdminStaffManager({
       revokeUrl(editImagePreview);
     };
   }, [editImagePreview, staffImagePreview]);
+
+  useEffect(() => {
+    setSelectedStaffId((current) => {
+      if (current && staff.some((item) => item.id === current)) {
+        return current;
+      }
+      return staff[0]?.id ?? "";
+    });
+  }, [staff]);
 
   const onCreateImageChange = (file: File | null) => {
     revokeUrl(staffImagePreview);
@@ -181,6 +196,58 @@ export function AdminStaffManager({
         "error",
         error instanceof Error ? error.message : "Unable to add staff member."
       );
+    }
+  };
+
+  const onUploadStaffPdf = async (event: FormEvent) => {
+    event.preventDefault();
+
+    if (!selectedStaffId) {
+      addToast("error", "Please select a staff member.");
+      return;
+    }
+
+    if (!staffPdfFile) {
+      addToast("error", "Please select a PDF file.");
+      return;
+    }
+
+    setPdfUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("staffId", selectedStaffId);
+      formData.append("title", staffPdfTitle);
+      formData.append("file", staffPdfFile);
+
+      const payload = await apiRequest<{
+        message?: string;
+        member?: StaffApiPayload;
+      }>("/api/admin/staff/pdfs", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!payload.member) {
+        throw new Error("Invalid staff PDF response.");
+      }
+
+      const updatedMember = toStaffMember(payload.member);
+      setStaff((current) =>
+        current.map((item) =>
+          item.id === updatedMember.id ? updatedMember : item
+        )
+      );
+
+      setStaffPdfFile(null);
+      setStaffPdfTitle("");
+      addToast("success", payload.message ?? "Staff PDF uploaded.");
+    } catch (error) {
+      addToast(
+        "error",
+        error instanceof Error ? error.message : "Unable to upload staff PDF."
+      );
+    } finally {
+      setPdfUploading(false);
     }
   };
 
@@ -264,6 +331,8 @@ export function AdminStaffManager({
     });
   };
 
+  const selectedStaff = staff.find((item) => item.id === selectedStaffId);
+
   return (
     <div className="space-y-6">
       <form
@@ -326,6 +395,64 @@ export function AdminStaffManager({
         >
           <Plus className="h-4 w-4" />
           Add Teacher
+        </button>
+      </form>
+
+      <form
+        onSubmit={onUploadStaffPdf}
+        className="rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900"
+      >
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+          Upload Staff PDF
+        </h3>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+          Upload or replace the downloadable PDF for a selected staff card.
+        </p>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <select
+            value={selectedStaffId}
+            onChange={(event) => setSelectedStaffId(event.target.value)}
+            required
+            className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+          >
+            <option value="" disabled>
+              Select staff member
+            </option>
+            {staff.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+          <input
+            value={staffPdfTitle}
+            onChange={(event) => setStaffPdfTitle(event.target.value)}
+            placeholder="PDF title (optional)"
+            className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900"
+          />
+          <input
+            type="file"
+            accept="application/pdf,.pdf"
+            onChange={(event) => setStaffPdfFile(event.target.files?.[0] ?? null)}
+            required
+            className="min-h-[44px] rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900 md:col-span-2"
+          />
+        </div>
+
+        {selectedStaff?.pdfUrl ? (
+          <p className="mt-2 break-words text-xs text-slate-500 dark:text-slate-400">
+            Current PDF: {selectedStaff.pdfTitle ?? "Staff Profile"}
+          </p>
+        ) : null}
+
+        <button
+          type="submit"
+          disabled={pdfUploading || staff.length === 0}
+          className="mt-3 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+        >
+          <Plus className="h-4 w-4" />
+          {pdfUploading ? "Uploading..." : "Upload Staff PDF"}
         </button>
       </form>
 

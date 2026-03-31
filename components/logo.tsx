@@ -5,17 +5,24 @@ import { siteConfig } from "@/lib/site-config";
 interface LogoProps {
   compact?: boolean;
   mode?: "light" | "dark";
-  variant?: "default" | "hero"; 
+  variant?: "default" | "hero";
+  size?: number;
 }
 
-export function Logo({ compact = false, mode = "light", variant = "default"}: LogoProps) {
+export function Logo({
+  compact = false,
+  mode = "light",
+  variant = "default",
+  size = 44
+}: LogoProps) {
   const useImage = siteConfig.logo.mode === "image";
   const isDarkModeSurface = mode === "dark";
 
   if (useImage) {
     return (
       <div
-      className={`relative h-11 w-11 overflow-hidden ${variant === "hero"? "": `rounded-full border shadow-lg backdrop-blur-lg ${
+      style={{ width: size, height: size }}
+      className={`relative overflow-hidden ${variant === "hero"? "": `rounded-full border shadow-lg backdrop-blur-lg ${
           isDarkModeSurface
             ? "border-slate-200 bg-white"
             : "border-white/25 bg-white/15"
@@ -27,7 +34,7 @@ export function Logo({ compact = false, mode = "light", variant = "default"}: Lo
           alt={`${siteConfig.shortName} logo`}
           fill
           className="object-contain p-1"
-          sizes="44px"
+          sizes={`${size}px`}
           priority
         />
       </div>
@@ -36,7 +43,8 @@ export function Logo({ compact = false, mode = "light", variant = "default"}: Lo
 
   return (
     <div
-      className={`relative flex h-11 w-11 items-center justify-center overflow-hidden border shadow-lg backdrop-blur-lg ${
+      style={{ width: size, height: size }}
+      className={`relative flex items-center justify-center overflow-hidden border shadow-lg backdrop-blur-lg ${
         siteConfig.logo.style === "shield" ? "rounded-[14px]" : "rounded-full"
       } ${
         isDarkModeSurface ? "border-brand-200" : "border-white/25"

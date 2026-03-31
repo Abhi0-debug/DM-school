@@ -11,13 +11,18 @@ export const siteConfig = {
   },
   contact: {
     email: "dmpublicschoolpuri@gmail.com",
-    phone: "+91 99999 99999",
+    phone:
+      "+91 8339012220, +91 9938702859, +91 8658252927 (Office), +91 8658252927 (WhatsApp)",
     address: "D.M. Public School, Plot no 408, Puri 1, beside Hanuman Temple, near Dr.Baren Pattanaik Eye Clinic, Duttatota, Puri, Odisha 752001"
   },
   socials: {
-    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "919999999999",
+    whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "918658252927",
     instagram:
-      process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "https://www.instagram.com/"
+      process.env.NEXT_PUBLIC_INSTAGRAM_URL ??
+      "https://www.instagram.com/d.m.publicschool?igsh=MXRyZWYycDd6MHJszg%3D%3D&utm_source=qr",
+    youtube:
+      process.env.NEXT_PUBLIC_YOUTUBE_URL ??
+      "https://youtube.com/@dmpublicschoolpuri?si=TZD4J29foT59RGLe"
   }
 };
 

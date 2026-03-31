@@ -1,5 +1,5 @@
 import { Hero } from "@/components/hero";
-import { Gallery } from "@/components/gallery";
+import { GalleryModeRenderer } from "@/components/gallery-mode-renderer";
 import { EventsSection } from "@/components/events-section";
 import { NoticeBoard } from "@/components/notice-board";
 import { StaffSection } from "@/components/staff-section";
@@ -9,6 +9,7 @@ import { fallbackHeroSlides } from "@/lib/constants";
 import {
   getDocuments,
   getEvents,
+  getGalleryDisplayConfig,
   getHeroAdmissionsText,
   getNotices,
   getPublicGalleryImages,
@@ -55,8 +56,12 @@ export async function HeroSectionContent() {
 }
 
 export async function GallerySectionContent() {
-  const images = await getPublicGalleryImages();
-  return <Gallery initialImages={images} />;
+  const [images, galleryDisplayConfig] = await Promise.all([
+    getPublicGalleryImages(),
+    getGalleryDisplayConfig()
+  ]);
+
+  return <GalleryModeRenderer mode={galleryDisplayConfig.mode} images={images} />;
 }
 
 export async function EventsSectionContent() {

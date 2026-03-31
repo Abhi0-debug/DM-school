@@ -93,6 +93,10 @@ export const navConfigSchema = z.object({
   contact: z.boolean()
 });
 
+export const galleryDisplayConfigSchema = z.object({
+  mode: z.enum(["grid", "slideshow"])
+});
+
 export const teacherTextSchema = z.object({
   name: z.string().min(2, "Teacher name should be at least 2 characters."),
   subject: z.string().min(2, "Subject is required."),

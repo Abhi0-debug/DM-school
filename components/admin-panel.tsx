@@ -51,7 +51,13 @@ import {
   useRef,
   useState
 } from "react";
-import { EventItem, GalleryImage, NoticeItem, NoticeType } from "@/lib/types";
+import {
+  EventItem,
+  GalleryDisplayMode,
+  GalleryImage,
+  NoticeItem,
+  NoticeType
+} from "@/lib/types";
 import { AdminStaffManager } from "@/components/admin-staff-manager";
 import { AdminDocumentsManager } from "@/components/admin-documents-manager";
 
@@ -284,6 +290,10 @@ export function AdminPanel() {
   );
   const [heroContentLoading, setHeroContentLoading] = useState(false);
   const [heroContentSaving, setHeroContentSaving] = useState(false);
+  const [galleryDisplayMode, setGalleryDisplayMode] =
+    useState<GalleryDisplayMode>("grid");
+  const [galleryDisplayLoading, setGalleryDisplayLoading] = useState(false);
+  const [galleryDisplaySaving, setGalleryDisplaySaving] = useState(false);
 
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
@@ -426,6 +436,36 @@ export function AdminPanel() {
     }
   }, [addToast]);
 
+  const loadGalleryDisplayMode = useCallback(async () => {
+    setGalleryDisplayLoading(true);
+    try {
+      const response = await fetch("/api/admin/gallery-display", {
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to load gallery display mode.");
+      }
+
+      const payload = (await response.json()) as {
+        config?: { mode?: GalleryDisplayMode };
+      };
+
+      setGalleryDisplayMode(
+        payload.config?.mode === "slideshow" ? "slideshow" : "grid"
+      );
+    } catch (error) {
+      addToast(
+        "error",
+        error instanceof Error
+          ? error.message
+          : "Unable to load gallery display mode."
+      );
+    } finally {
+      setGalleryDisplayLoading(false);
+    }
+  }, [addToast]);
+
   useEffect(() => {
     let mounted = true;
 
@@ -437,7 +477,11 @@ export function AdminPanel() {
 
         if (response.ok && mounted) {
           setAuthenticated(true);
-          await Promise.all([loadDashboardData(), loadHeroAdmissionsText()]);
+          await Promise.all([
+            loadDashboardData(),
+            loadHeroAdmissionsText(),
+            loadGalleryDisplayMode()
+          ]);
         }
       } finally {
         if (mounted) {
@@ -451,7 +495,7 @@ export function AdminPanel() {
     return () => {
       mounted = false;
     };
-  }, [loadDashboardData, loadHeroAdmissionsText]);
+  }, [loadDashboardData, loadHeroAdmissionsText, loadGalleryDisplayMode]);
 
   const stats = useMemo(
     () => [
@@ -521,12 +565,42 @@ export function AdminPanel() {
       setAuthenticated(true);
       setPin("");
       addToast("success", "Login successful.");
-      await Promise.all([loadDashboardData(), loadHeroAdmissionsText()]);
+      await Promise.all([
+        loadDashboardData(),
+        loadHeroAdmissionsText(),
+        loadGalleryDisplayMode()
+      ]);
     } catch (error) {
       setPinError(error instanceof Error ? error.message : "Unable to login.");
     } finally {
       setPinLoading(false);
       setAuthChecked(true);
+    }
+  };
+
+  const saveGalleryDisplaySettings = async () => {
+    setGalleryDisplaySaving(true);
+
+    try {
+      const payload = await apiRequest<{
+        message?: string;
+        config?: { mode?: GalleryDisplayMode };
+      }>("/api/admin/gallery-display", {
+        method: "PUT",
+        body: JSON.stringify({ mode: galleryDisplayMode })
+      });
+
+      setGalleryDisplayMode(
+        payload.config?.mode === "slideshow" ? "slideshow" : "grid"
+      );
+      addToast("success", payload.message ?? "Gallery mode updated.");
+    } catch (error) {
+      addToast(
+        "error",
+        error instanceof Error ? error.message : "Unable to save gallery mode."
+      );
+    } finally {
+      setGalleryDisplaySaving(false);
     }
   };
 
@@ -1781,6 +1855,51 @@ export function AdminPanel() {
           ) : null}
           {activeSection === "gallery" ? (
             <div className="space-y-6">
+              <div className="max-w-xl rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Gallery Presentation Mode
+                </h3>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  Keep the current gallery grid or switch to slideshow mode.
+                </p>
+
+                <label className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700">
+                  <span>Enable Slideshow Mode</span>
+                  <input
+                    type="checkbox"
+                    checked={galleryDisplayMode === "slideshow"}
+                    onChange={(event) =>
+                      setGalleryDisplayMode(
+                        event.target.checked ? "slideshow" : "grid"
+                      )
+                    }
+                  />
+                </label>
+
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  Current mode:{" "}
+                  {galleryDisplayMode === "slideshow"
+                    ? "Slideshow"
+                    : "Default grid"}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={saveGalleryDisplaySettings}
+                  disabled={galleryDisplaySaving || galleryDisplayLoading}
+                  className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+                >
+                  {galleryDisplaySaving || galleryDisplayLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : null}
+                  {galleryDisplaySaving
+                    ? "Saving..."
+                    : galleryDisplayLoading
+                      ? "Loading..."
+                      : "Save Gallery Mode"}
+                </button>
+              </div>
+
               <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   Upload Images
@@ -2113,6 +2232,51 @@ export function AdminPanel() {
                       : "Save Admissions Text"}
                 </button>
               </form>
+
+              <div className="max-w-xl rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Gallery Presentation Mode
+                </h3>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  Keep the current gallery grid or switch to slideshow mode.
+                </p>
+
+                <label className="mt-4 inline-flex min-h-[44px] w-full items-center justify-between rounded-lg border border-slate-200 px-3 py-2.5 text-sm dark:border-slate-700">
+                  <span>Enable Slideshow Mode</span>
+                  <input
+                    type="checkbox"
+                    checked={galleryDisplayMode === "slideshow"}
+                    onChange={(event) =>
+                      setGalleryDisplayMode(
+                        event.target.checked ? "slideshow" : "grid"
+                      )
+                    }
+                  />
+                </label>
+
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  Current mode:{" "}
+                  {galleryDisplayMode === "slideshow"
+                    ? "Slideshow"
+                    : "Default grid"}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={saveGalleryDisplaySettings}
+                  disabled={galleryDisplaySaving || galleryDisplayLoading}
+                  className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+                >
+                  {galleryDisplaySaving || galleryDisplayLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : null}
+                  {galleryDisplaySaving
+                    ? "Saving..."
+                    : galleryDisplayLoading
+                      ? "Loading..."
+                      : "Save Gallery Mode"}
+                </button>
+              </div>
 
               <div className="max-w-xl rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
                 <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
