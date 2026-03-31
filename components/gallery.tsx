@@ -16,26 +16,10 @@ function normalizeCategory(value: string) {
 }
 
 export function Gallery({ initialImages, externalImageId }: GalleryProps) {
-  const [images, setImages] = useState<GalleryImage[]>(initialImages);
+  const images = initialImages;
   const [viewerImages, setViewerImages] = useState<GalleryImage[]>([]);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
-
-  const refreshGallery = useCallback(async () => {
-    try {
-      const response = await fetch("/api/images", { cache: "no-store" });
-      if (!response.ok) {
-        return;
-      }
-
-      const payload = (await response.json()) as { images?: GalleryImage[] };
-      if (Array.isArray(payload.images)) {
-        setImages(payload.images);
-      }
-    } catch {
-      // Keep currently rendered images.
-    }
-  }, []);
 
   const closeViewer = useCallback(() => {
     setActiveIndex(null);
@@ -63,19 +47,6 @@ export function Gallery({ initialImages, externalImageId }: GalleryProps) {
     },
     [images]
   );
-
-  useEffect(() => {
-    void refreshGallery();
-  }, [refreshGallery]);
-
-  useEffect(() => {
-    const onGalleryUpdated = () => {
-      void refreshGallery();
-    };
-
-    window.addEventListener("gallery:updated", onGalleryUpdated);
-    return () => window.removeEventListener("gallery:updated", onGalleryUpdated);
-  }, [refreshGallery]);
 
   useEffect(() => {
     if (!externalImageId) {

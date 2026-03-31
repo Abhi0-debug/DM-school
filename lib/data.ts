@@ -1,6 +1,7 @@
 import {
   ContactMessage,
   ContactSettings,
+  DocumentItem,
   EventItem,
   GalleryImage,
   HeroSlide,
@@ -36,6 +37,53 @@ export async function getGalleryImages() {
 
 export async function getHeroSlides() {
   return readJsonFile<HeroSlide[]>("hero.json", fallbackHeroSlides);
+}
+
+export async function getHeroAdmissionsText() {
+  try {
+    const { getDefaultAdmissionsText, getHeroContent } = await import(
+      "@/lib/hero-content-service"
+    );
+    const content = await getHeroContent();
+    const nextText = content.admissionsText.trim();
+    return nextText.length > 0 ? nextText : getDefaultAdmissionsText();
+  } catch {
+    try {
+      const { getDefaultAdmissionsText } = await import("@/lib/hero-content-service");
+      return getDefaultAdmissionsText();
+    } catch {
+      return "";
+    }
+  }
+}
+
+export async function getPublicGalleryImages() {
+  try {
+    const { listGalleryImages } = await import("@/lib/gallery-service");
+    const images = await listGalleryImages();
+    if (images.length > 0) {
+      return images;
+    }
+  } catch {
+    // Fall through to static/local fallback data.
+  }
+
+  try {
+    const fallbackImages = await getGalleryImages();
+    const { getDynamicImages } = await import("@/lib/media-provider");
+    return getDynamicImages(fallbackImages);
+  } catch {
+    return [];
+  }
+}
+
+export async function getDocuments() {
+  try {
+    const { listDocuments } = await import("@/lib/documents-service");
+    return await listDocuments();
+  } catch {
+    return [] as DocumentItem[];
+  }
 }
 
 export async function getStaffMembers() {

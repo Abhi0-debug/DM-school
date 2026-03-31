@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { SectionHeading } from "@/components/section-heading";
 import { siteConfig } from "@/lib/site-config";
@@ -13,13 +13,23 @@ interface ContactFormState {
   captchaAnswer: string;
 }
 
+interface CaptchaChallenge {
+  a: number;
+  b: number;
+  expected: number;
+}
+
+interface ContactSectionProps {
+  initialChallenge?: CaptchaChallenge;
+}
+
 function getCaptchaChallenge() {
   const a = Math.floor(Math.random() * 8) + 1;
   const b = Math.floor(Math.random() * 8) + 1;
   return { a, b, expected: a + b };
 }
 
-const initialChallenge = { a: 1, b: 1, expected: 2 };
+const fallbackChallenge = { a: 1, b: 1, expected: 2 };
 
 const initialState: ContactFormState = {
   name: "",
@@ -29,17 +39,13 @@ const initialState: ContactFormState = {
   captchaAnswer: ""
 };
 
-export function ContactSection() {
+export function ContactSection({ initialChallenge = fallbackChallenge }: ContactSectionProps) {
   const [form, setForm] = useState<ContactFormState>(initialState);
-  const [challenge, setChallenge] = useState(initialChallenge);
+  const [challenge, setChallenge] = useState<CaptchaChallenge>(initialChallenge);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
   );
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    setChallenge(getCaptchaChallenge());
-  }, []);
 
   const canSubmit = useMemo(
     () =>

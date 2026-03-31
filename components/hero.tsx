@@ -5,22 +5,21 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { siteConfig } from "@/lib/site-config";
 import { HeroSlide } from "@/lib/types";
-import { fallbackHeroSlides } from "@/lib/constants";
 import { Logo } from "@/components/logo";
 
 interface HeroProps {
   initialSlides: HeroSlide[];
+  admissionsText: string;
 }
 
-const FALLBACK_ADMISSIONS_TEXT = "Admissions Open 2026";
-
-export function Hero({ initialSlides }: HeroProps) {
-  const slides = initialSlides.length > 0 ? initialSlides : fallbackHeroSlides;
+export function Hero({ initialSlides, admissionsText }: HeroProps) {
+  const slides = initialSlides;
   const [activeIndex, setActiveIndex] = useState(0);
-  const [admissionsText, setAdmissionsText] = useState(FALLBACK_ADMISSIONS_TEXT);
+  const bannerText = admissionsText.trim();
+  const hasSlides = slides.length > 0;
 
   useEffect(() => {
-    if (slides.length < 2) {
+    if (!hasSlides || slides.length < 2) {
       return;
     }
 
@@ -29,65 +28,16 @@ export function Hero({ initialSlides }: HeroProps) {
     }, 5500);
 
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [hasSlides, slides.length]);
 
   const current = useMemo(
-    () => slides[activeIndex] ?? slides[0],
-    [activeIndex, slides]
+    () => (hasSlides ? slides[activeIndex] ?? slides[0] : null),
+    [activeIndex, hasSlides, slides]
   );
 
-  useEffect(() => {
-    let mounted = true;
-
-    const loadHeroContent = async () => {
-      try {
-        const response = await fetch("/api/hero", { cache: "no-store" });
-        if (!response.ok) {
-          return;
-        }
-
-        const payload = (await response.json()) as { admissionsText?: string };
-        const nextText = payload.admissionsText?.trim();
-        if (mounted && nextText) {
-          setAdmissionsText(nextText);
-        }
-      } catch {
-        // Keep fallback text if request fails.
-      }
-    };
-
-    void loadHeroContent();
-
-    const onHeroContentUpdated = (event: Event) => {
-      const customEvent = event as CustomEvent<{ admissionsText?: string }>;
-      const nextText = customEvent.detail?.admissionsText?.trim();
-      if (nextText) {
-        setAdmissionsText(nextText);
-      } else {
-        void loadHeroContent();
-      }
-    };
-
-    const onStorage = (event: StorageEvent) => {
-      if (event.key !== "hero:admissionsText") {
-        return;
-      }
-
-      const nextText = event.newValue?.trim();
-      if (nextText) {
-        setAdmissionsText(nextText);
-      }
-    };
-
-    window.addEventListener("hero:content-updated", onHeroContentUpdated);
-    window.addEventListener("storage", onStorage);
-
-    return () => {
-      mounted = false;
-      window.removeEventListener("hero:content-updated", onHeroContentUpdated);
-      window.removeEventListener("storage", onStorage);
-    };
-  }, []);
+  if (!hasSlides) {
+    return null;
+  }
 
   return (
     <section
@@ -115,24 +65,26 @@ export function Hero({ initialSlides }: HeroProps) {
 
       <div className="section-shell relative z-10 pb-16 pt-32 text-white sm:pb-24 sm:pt-40">
         <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
-          <p
-            className="inline-flex max-w-full animate-rise-in rounded-full border border-white/25 bg-white/10 px-4 py-2 text-center text-xs font-semibold uppercase leading-tight tracking-[0.2em] backdrop-blur-md sm:px-5 sm:text-sm md:text-base md:tracking-[0.25em]"
-            style={{ animationDelay: "0ms" }}
-          >
-            {admissionsText}
-          </p>
+          {bannerText ? (
+            <p
+              className="inline-flex max-w-full animate-rise-in rounded-full border border-white/25 bg-white/10 px-4 py-2 text-center text-xs font-semibold uppercase leading-tight tracking-[0.2em] backdrop-blur-md sm:px-5 sm:text-sm md:text-base md:tracking-[0.25em]"
+              style={{ animationDelay: "0ms" }}
+            >
+              {bannerText}
+            </p>
+          ) : null}
 
           <div
-          className="mt-8 flex animate-rise-in flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5"
-          style={{ animationDelay: "80ms" }}
+            className="mt-8 flex animate-rise-in flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5"
+            style={{ animationDelay: "80ms" }}
           >
             <div className="scale-125 sm:scale-150 md:scale-175">
-              <Logo mode="light" variant="hero"/>
+              <Logo mode="light" variant="hero" />
             </div>
             <h1 className="max-w-3xl break-words text-3xl font-bold leading-tight sm:text-5xl lg:text-6xl">
               {siteConfig.name}
-              </h1>
-              </div>
+            </h1>
+          </div>
 
           <p
             className="mt-6 max-w-2xl animate-rise-in text-base text-slate-100 sm:text-lg"

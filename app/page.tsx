@@ -1,46 +1,60 @@
+import { Suspense } from "react";
 import { Navbar } from "@/components/navbar";
-import { Hero } from "@/components/hero";
-import { Gallery } from "@/components/gallery";
-import { EventsSection } from "@/components/events-section";
-import { NoticeBoard } from "@/components/notice-board";
-import { StaffSection } from "@/components/staff-section";
-import { DownloadsSection } from "@/components/downloads-section";
 import { NewsletterSection } from "@/components/newsletter-section";
-import { ContactSection } from "@/components/contact-section";
 import { MapSection } from "@/components/map-section";
 import { Footer } from "@/components/footer";
 import { WhatsAppButton } from "@/components/whatsapp-button";
-import { getEvents, getGalleryImages, getNotices, getStaffMembers } from "@/lib/data";
-import { fallbackHeroSlides } from "@/lib/constants";
-import { getDynamicHero, getDynamicImages } from "@/lib/media-provider";
+import {
+  ContactSectionContent,
+  DownloadsSectionContent,
+  EventsSectionContent,
+  GallerySectionContent,
+  HeroSectionContent,
+  NoticeBoardSectionContent,
+  StaffSectionContent
+} from "@/components/home-sections";
+import {
+  DownloadsSkeleton,
+  EventsSkeleton,
+  GallerySkeleton,
+  HeroSkeleton,
+  NoticeBoardSkeleton,
+  StaffSkeleton
+} from "@/components/section-skeletons";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
-  const [events, notices, galleryFallback, staff] = await Promise.all([
-    getEvents(),
-    getNotices(),
-    getGalleryImages(),
-    getStaffMembers()
-  ]);
-
-  const [galleryImages, heroSlides] = await Promise.all([
-    getDynamicImages(galleryFallback),
-    getDynamicHero(fallbackHeroSlides)
-  ]);
-
+export default function HomePage() {
   return (
     <>
       <Navbar />
       <main>
-        <Hero initialSlides={heroSlides} />
-        <Gallery initialImages={galleryImages} />
-        <EventsSection initialEvents={events} />
-        <NoticeBoard initialNotices={notices} />
-        <StaffSection initialMembers={staff} />
-        <DownloadsSection />
+        <Suspense fallback={<HeroSkeleton />}>
+          <HeroSectionContent />
+        </Suspense>
+
+        <Suspense fallback={<GallerySkeleton />}>
+          <GallerySectionContent />
+        </Suspense>
+
+        <Suspense fallback={<EventsSkeleton />}>
+          <EventsSectionContent />
+        </Suspense>
+
+        <Suspense fallback={<NoticeBoardSkeleton />}>
+          <NoticeBoardSectionContent />
+        </Suspense>
+
+        <Suspense fallback={<StaffSkeleton />}>
+          <StaffSectionContent />
+        </Suspense>
+
+        <Suspense fallback={<DownloadsSkeleton />}>
+          <DownloadsSectionContent />
+        </Suspense>
+
         <NewsletterSection />
-        <ContactSection />
+        <ContactSectionContent />
         <MapSection />
       </main>
       <Footer />
