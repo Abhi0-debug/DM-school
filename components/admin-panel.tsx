@@ -377,7 +377,7 @@ export function AdminPanel() {
       const [eventsRes, noticesRes, imagesRes] = await Promise.all([
         fetch("/api/events", { cache: "no-store" }),
         fetch("/api/notices", { cache: "no-store" }),
-        fetch("/api/images", { cache: "no-store" })
+        fetch("/api/admin/images", { cache: "no-store" })
       ]);
 
       const [eventsPayload, noticesPayload, imagesPayload] = await Promise.all([
@@ -957,7 +957,7 @@ export function AdminPanel() {
       const payload = await apiRequest<{
         message?: string;
         images?: GalleryImage[];
-      }>("/api/upload", {
+      }>("/api/admin/images", {
         method: "POST",
         body: formData
       });
@@ -1026,7 +1026,7 @@ export function AdminPanel() {
       message: "This image will be removed from gallery permanently.",
       confirmLabel: "Delete",
       action: async () => {
-        const payload = await apiRequest<ApiMessage>(`/api/images/${id}`, {
+        const payload = await apiRequest<ApiMessage>(`/api/admin/images/${id}`, {
           method: "DELETE"
         });
         setImages((current) => current.filter((item) => item.id !== id));

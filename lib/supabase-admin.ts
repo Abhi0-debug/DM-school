@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let cachedClient: SupabaseClient | null = null;
+let warnedAboutSupabaseKey = false;
 
 function firstNonEmpty(...values: Array<string | undefined>) {
   for (const value of values) {
@@ -54,7 +55,7 @@ function decodeJwtRole(token: string) {
   }
 }
 
-function getServiceRoleKeyIssue(serviceRoleKey: string, source: string) {
+function getServiceRoleKeyWarning(serviceRoleKey: string, source: string) {
   if (serviceRoleKey.startsWith("sb_publishable_")) {
     return `${source} is using a publishable key. Use Supabase service-role (legacy) or secret key instead.`;
   }
@@ -86,9 +87,10 @@ export function getSupabaseAdminClient() {
     );
   }
 
-  const keyIssue = getServiceRoleKeyIssue(serviceRoleKey, serviceRoleKeySource);
-  if (keyIssue) {
-    throw new Error(keyIssue);
+  const keyWarning = getServiceRoleKeyWarning(serviceRoleKey, serviceRoleKeySource);
+  if (keyWarning && !warnedAboutSupabaseKey) {
+    warnedAboutSupabaseKey = true;
+    console.warn(`[supabase-admin] ${keyWarning}`);
   }
 
   cachedClient = createClient(url, serviceRoleKey, {
