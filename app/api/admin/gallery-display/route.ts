@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthorized } from "@/lib/admin-auth";
 import { readJsonFile, writeJsonFile } from "@/lib/file-store";
+import {
+  getGalleryDisplayConfig,
+  saveGalleryDisplayConfig
+} from "@/lib/gallery-display-service";
 import { GalleryDisplayConfig } from "@/lib/types";
 import { galleryDisplayConfigSchema } from "@/lib/validation";
 
@@ -15,13 +19,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
   }
 
-  const stored = await readJsonFile<GalleryDisplayConfig>(
-    "gallery-display.json",
-    fallbackConfig
-  );
-  const config: GalleryDisplayConfig = {
-    mode: stored.mode === "slideshow" ? "slideshow" : "grid"
-  };
+  let config: GalleryDisplayConfig = fallbackConfig;
+  try {
+    config = await getGalleryDisplayConfig();
+  } catch {
+    const stored = await readJsonFile<GalleryDisplayConfig>(
+      "gallery-display.json",
+      fallbackConfig
+    );
+    config = {
+      mode: stored.mode === "slideshow" ? "slideshow" : "grid"
+    };
+  }
 
   return NextResponse.json({ config });
 }
@@ -45,9 +54,31 @@ export async function PUT(request: NextRequest) {
     );
   }
 
-  await writeJsonFile("gallery-display.json", parsed.data);
+  let config = parsed.data;
+  try {
+    config = await saveGalleryDisplayConfig(parsed.data);
+  } catch (error) {
+    if (process.env.NODE_ENV === "production") {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to save gallery display mode in persistent storage.";
+      return NextResponse.json({ message }, { status: 500 });
+    }
+
+    try {
+      await writeJsonFile("gallery-display.json", parsed.data);
+    } catch (writeError) {
+      const message =
+        writeError instanceof Error
+          ? writeError.message
+          : "Unable to save gallery display mode.";
+      return NextResponse.json({ message }, { status: 500 });
+    }
+  }
+
   return NextResponse.json({
     message: "Gallery display mode updated.",
-    config: parsed.data
+    config
   });
 }

@@ -43,7 +43,7 @@ class GalleryModeErrorBoundary extends Component<
 export function GalleryModeRenderer({ mode, images }: GalleryModeRendererProps) {
   const fallback = <Gallery initialImages={images} />;
 
-  if (mode !== "slideshow" || images.length === 0) {
+  if (mode !== "slideshow" || images.length < 2) {
     return fallback;
   }
 

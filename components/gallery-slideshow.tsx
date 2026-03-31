@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { SectionHeading } from "@/components/section-heading";
 import { GalleryImage } from "@/lib/types";
 
@@ -15,9 +15,11 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isDocumentHidden, setIsDocumentHidden] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
   const canNavigate = images.length > 1;
-  const isPaused = isHovered || isDocumentHidden;
+  const isPreviewOpen = previewIndex !== null;
+  const isPaused = isHovered || isDocumentHidden || isPreviewOpen;
 
   useEffect(() => {
     setActiveIndex((current) =>
@@ -47,6 +49,63 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
     return () => window.clearInterval(timer);
   }, [canNavigate, images.length, isPaused]);
 
+  useEffect(() => {
+    if (!isPreviewOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isPreviewOpen]);
+
+  const navigatePreview = useCallback(
+    (direction: "next" | "previous") => {
+      if (!canNavigate || previewIndex === null) {
+        return;
+      }
+
+      const nextIndex =
+        direction === "next"
+          ? (previewIndex + 1) % images.length
+          : (previewIndex - 1 + images.length) % images.length;
+
+      setPreviewIndex(nextIndex);
+      setActiveIndex(nextIndex);
+    },
+    [canNavigate, images.length, previewIndex]
+  );
+
+  const closePreview = useCallback(() => {
+    setPreviewIndex(null);
+  }, []);
+
+  useEffect(() => {
+    if (!isPreviewOpen) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closePreview();
+      }
+
+      if (event.key === "ArrowRight") {
+        navigatePreview("next");
+      }
+
+      if (event.key === "ArrowLeft") {
+        navigatePreview("previous");
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [closePreview, isPreviewOpen, navigatePreview]);
+
   const goToPrevious = () => {
     if (!canNavigate) {
       return;
@@ -62,6 +121,13 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
 
     setActiveIndex((current) => (current + 1) % images.length);
   };
+
+  const openPreview = () => {
+    setPreviewIndex(activeIndex);
+  };
+
+  const previewImage =
+    previewIndex === null ? null : images[Math.min(previewIndex, images.length - 1)] ?? null;
 
   if (images.length === 0) {
     return (
@@ -114,9 +180,19 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
                   index === activeIndex ? "scale-105" : "scale-100"
                 }`}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+              {index === activeIndex ? (
+                <button
+                  type="button"
+                  aria-label={`Open full image: ${image.title ?? image.alt}`}
+                  onClick={openPreview}
+                  className="absolute inset-0 z-[1] cursor-zoom-in"
+                >
+                  <span className="sr-only">Open full image</span>
+                </button>
+              ) : null}
 
-              <div className="absolute bottom-0 left-0 right-0 p-5 text-white sm:p-7">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 z-[2] p-5 text-white sm:p-7">
                 <p className="inline-flex rounded-full border border-white/30 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/90 backdrop-blur-sm">
                   {image.category}
                 </p>
@@ -165,6 +241,66 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
           </>
         ) : null}
       </div>
+
+      {previewImage ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/92 backdrop-blur-sm p-3 sm:p-4"
+          onClick={closePreview}
+        >
+          <button
+            type="button"
+            aria-label="Close preview"
+            onClick={(event) => {
+              event.stopPropagation();
+              closePreview();
+            }}
+            className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white sm:right-4 sm:top-4"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {canNavigate ? (
+            <>
+              <button
+                type="button"
+                aria-label="Previous image"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  navigatePreview("previous");
+                }}
+                className="absolute left-2 top-1/2 z-[81] inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white backdrop-blur-sm transition hover:bg-black/50 sm:left-4 sm:h-11 sm:w-11"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                aria-label="Next image"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  navigatePreview("next");
+                }}
+                className="absolute right-2 top-1/2 z-[81] inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white backdrop-blur-sm transition hover:bg-black/50 sm:right-4 sm:h-11 sm:w-11"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </>
+          ) : null}
+
+          <div
+            className="relative h-[86vh] w-full max-w-6xl overflow-hidden rounded-2xl border border-white/10 shadow-2xl transition-all duration-200 ease-out"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Image
+              src={previewImage.url}
+              alt={previewImage.title ?? previewImage.alt}
+              fill
+              unoptimized
+              sizes="100vw"
+              className="h-full w-full object-contain"
+            />
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

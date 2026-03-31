@@ -25,6 +25,11 @@ export const metadata: Metadata = {
     default: "DM Public School",
     template: "%s | DM Public School"
   },
+  icons: {
+    icon: "/CICA LOGO 3.png",
+    shortcut: "/CICA LOGO 3.png",
+    apple: "/CICA LOGO 3.png"
+  },
   description: siteConfig.description,
   openGraph: {
     title: "DM Public School",

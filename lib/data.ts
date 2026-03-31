@@ -79,15 +79,20 @@ export async function getPublicGalleryImages() {
 }
 
 export async function getGalleryDisplayConfig(): Promise<GalleryDisplayConfig> {
-  const fallback: GalleryDisplayConfig = { mode: "grid" };
-  const config = await readJsonFile<GalleryDisplayConfig>(
-    "gallery-display.json",
-    fallback
-  );
+  try {
+    const { getGalleryDisplayConfig } = await import("@/lib/gallery-display-service");
+    return await getGalleryDisplayConfig();
+  } catch {
+    const fallback: GalleryDisplayConfig = { mode: "grid" };
+    const config = await readJsonFile<GalleryDisplayConfig>(
+      "gallery-display.json",
+      fallback
+    );
 
-  return {
-    mode: config.mode === "slideshow" ? "slideshow" : "grid"
-  };
+    return {
+      mode: config.mode === "slideshow" ? "slideshow" : "grid"
+    };
+  }
 }
 
 export async function getDocuments() {
