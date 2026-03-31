@@ -1,5 +1,9 @@
 import { GalleryImage as PrismaGalleryImage } from "@prisma/client";
-import { deleteImageFromCloudinary, uploadImageToCloudinary } from "@/lib/cloudinary";
+import {
+  deleteImageFromCloudinary,
+  listCloudinaryImagesForSync,
+  uploadImageToCloudinary
+} from "@/lib/cloudinary";
 import { prisma } from "@/lib/prisma";
 import { GalleryImage } from "@/lib/types";
 
@@ -50,10 +54,55 @@ async function getTopSortStart(offset = 0) {
   return (top?.sortOrder ?? 0) - 1 - offset;
 }
 
+async function bootstrapGalleryFromCloudinaryIfEmpty() {
+  const count = await prisma.galleryImage.count();
+  if (count > 0) {
+    return;
+  }
+
+  const cloudinaryImages = await listCloudinaryImagesForSync();
+  if (cloudinaryImages.length === 0) {
+    return;
+  }
+
+  await prisma.$transaction(
+    cloudinaryImages.map((image, index) =>
+      prisma.galleryImage.upsert({
+        where: { publicId: image.publicId },
+        update: {
+          imageUrl: image.secureUrl,
+          title: image.title,
+          category: normalizeCategory(image.category),
+          sortOrder: index
+        },
+        create: {
+          imageUrl: image.secureUrl,
+          publicId: image.publicId,
+          title: image.title,
+          category: normalizeCategory(image.category),
+          sortOrder: index
+        }
+      })
+    )
+  );
+}
+
 export async function listGalleryImages(category?: string): Promise<GalleryImage[]> {
-  const images: PrismaGalleryImage[] = await prisma.galleryImage.findMany({
+  let images: PrismaGalleryImage[] = await prisma.galleryImage.findMany({
     orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }]
   });
+
+  if (images.length === 0) {
+    try {
+      await bootstrapGalleryFromCloudinaryIfEmpty();
+      images = await prisma.galleryImage.findMany({
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }]
+      });
+    } catch {
+      // Keep an empty list when cloud bootstrap is unavailable.
+    }
+  }
+
   const filterKey = category ? normalizeCategoryKey(category) : null;
   const filtered = filterKey
     ? images.filter((image) => normalizeCategoryKey(image.category) === filterKey)

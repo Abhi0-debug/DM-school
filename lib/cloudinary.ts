@@ -30,6 +30,18 @@ function toDataUri(file: File, bytes: Buffer) {
   return `data:${mime};base64,${bytes.toString("base64")}`;
 }
 
+function normalizeContextText(value: string | undefined, fallback: string) {
+  const cleaned = value?.trim();
+  return cleaned && cleaned.length > 0 ? cleaned : fallback;
+}
+
+function titleFromPublicId(publicId: string) {
+  const raw = publicId.split("/").pop() ?? publicId;
+  const withoutExt = raw.replace(/\.[a-zA-Z0-9]+$/, "");
+  const cleaned = withoutExt.replace(/[-_]+/g, " ").trim();
+  return cleaned.length > 0 ? cleaned : "School image";
+}
+
 export async function uploadImageToCloudinary(
   file: File,
   options?: { title?: string; category?: string; folder?: string }
@@ -91,4 +103,31 @@ export async function deleteImageFromCloudinary(publicId: string) {
   if (result.result !== "ok" && result.result !== "not found") {
     throw new Error("Unable to delete image from Cloudinary.");
   }
+}
+
+export async function listCloudinaryImagesForSync(limit = 200) {
+  ensureCloudinaryConfigured();
+  const folder = process.env.CLOUDINARY_FOLDER ?? "dm-public-school";
+  const prefix = folder.trim();
+
+  const result = await cloudinary.api.resources({
+    type: "upload",
+    resource_type: "image",
+    max_results: limit,
+    prefix: prefix ? `${prefix}/` : undefined,
+    direction: "desc"
+  });
+
+  const resources = (result.resources ?? []) as Array<{
+    public_id: string;
+    secure_url: string;
+    context?: { custom?: { caption?: string; category?: string } };
+  }>;
+
+  return resources.map((item) => ({
+    publicId: item.public_id,
+    secureUrl: item.secure_url,
+    title: normalizeContextText(item.context?.custom?.caption, titleFromPublicId(item.public_id)),
+    category: normalizeContextText(item.context?.custom?.category, "Campus")
+  }));
 }
