@@ -35,7 +35,7 @@ export function NoticeBoard({ initialNotices }: NoticeBoardProps) {
   }, [initialNotices, tab]);
 
   return (
-    <section id="notices" className="section-shell section-spacing">
+    <section id="notices" className="section-shell section-spacing overflow-x-hidden sm:overflow-x-visible">
       <SectionHeading title="Notice Board" subtitle="Daily Updates, Holidays & Important Alerts" />
 
       <div className="mt-6 flex flex-wrap gap-2">
@@ -64,7 +64,7 @@ export function NoticeBoard({ initialNotices }: NoticeBoardProps) {
           filtered.map((notice) => (
             <article
               key={notice.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-soft dark:border-slate-700 dark:bg-slate-900"
+              className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft dark:border-slate-700 dark:bg-slate-900"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span
@@ -83,10 +83,10 @@ export function NoticeBoard({ initialNotices }: NoticeBoardProps) {
                   <Bell className="h-3.5 w-3.5" /> {formatDate(notice.date)}
                 </span>
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
+              <h3 className="mt-4 break-words text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {notice.title}
               </h3>
-              <p className="mt-2 break-words text-sm text-slate-600 dark:text-slate-300">
+              <p className="mt-2 break-all text-sm text-slate-600 sm:break-words dark:text-slate-300">
                 {notice.content}
               </p>
             </article>
