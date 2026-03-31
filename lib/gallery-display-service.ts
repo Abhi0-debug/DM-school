@@ -96,6 +96,13 @@ export async function saveGalleryDisplayConfig(config: GalleryDisplayConfig) {
     const isMimeRestriction =
       normalizedMessage.includes("mime type") &&
       normalizedMessage.includes("not supported");
+    const isRlsPolicyError = normalizedMessage.includes("row-level security policy");
+
+    if (isRlsPolicyError) {
+      throw new Error(
+        "Failed to save gallery display mode: storage write blocked by row-level security policy. Set SUPABASE_SERVICE_ROLE_KEY to a Supabase service-role or secret key in deployment."
+      );
+    }
 
     if (!isMimeRestriction) {
       throw new Error(`Failed to save gallery display mode: ${error.message}`);
