@@ -5,6 +5,12 @@ import { GalleryDisplayConfig } from "@/lib/types";
 const DEFAULT_CONFIG: GalleryDisplayConfig = { mode: "grid" };
 const LOCAL_FILE = "gallery-display.json";
 const STORAGE_PATH = "configs/gallery-display.json";
+const STORAGE_CONTENT_TYPES = [
+  "application/json",
+  "text/plain",
+  "application/octet-stream",
+  "application/pdf"
+];
 
 function normalizeConfig(
   input: Partial<GalleryDisplayConfig> | null | undefined
@@ -72,18 +78,31 @@ export async function saveGalleryDisplayConfig(config: GalleryDisplayConfig) {
 
   const supabase = getSupabaseAdminClient();
   const bucket = getDocumentsBucket();
-  const { error } = await supabase.storage.from(bucket).upload(
-    STORAGE_PATH,
-    Buffer.from(JSON.stringify(normalized, null, 2), "utf8"),
-    {
-      contentType: "application/json",
-      upsert: true
-    }
-  );
+  const body = Buffer.from(JSON.stringify(normalized, null, 2), "utf8");
+  let lastErrorMessage = "";
 
-  if (error) {
-    throw new Error(`Failed to save gallery display mode: ${error.message}`);
+  for (const contentType of STORAGE_CONTENT_TYPES) {
+    const { error } = await supabase.storage.from(bucket).upload(STORAGE_PATH, body, {
+      contentType,
+      upsert: true
+    });
+
+    if (!error) {
+      return normalized;
+    }
+
+    lastErrorMessage = error.message;
+    const normalizedMessage = error.message.toLowerCase();
+    const isMimeRestriction =
+      normalizedMessage.includes("mime type") &&
+      normalizedMessage.includes("not supported");
+
+    if (!isMimeRestriction) {
+      throw new Error(`Failed to save gallery display mode: ${error.message}`);
+    }
   }
 
-  return normalized;
+  throw new Error(
+    `Failed to save gallery display mode: ${lastErrorMessage || "Unknown storage error."}`
+  );
 }
