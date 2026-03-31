@@ -4,6 +4,7 @@ import {
   listCloudinaryImagesForSync,
   uploadImageToCloudinary
 } from "@/lib/cloudinary";
+import { readJsonFile } from "@/lib/file-store";
 import { prisma } from "@/lib/prisma";
 import { GalleryImage } from "@/lib/types";
 
@@ -17,6 +18,14 @@ interface GalleryCreateInput {
 interface UploadMeta {
   title?: string;
   alt?: string;
+  category?: string;
+}
+
+interface LocalGallerySeed {
+  id?: string;
+  url: string;
+  alt?: string;
+  title?: string;
   category?: string;
 }
 
@@ -65,26 +74,94 @@ async function bootstrapGalleryFromCloudinaryIfEmpty() {
     return;
   }
 
-  await prisma.$transaction(
-    cloudinaryImages.map((image, index) =>
-      prisma.galleryImage.upsert({
-        where: { publicId: image.publicId },
-        update: {
-          imageUrl: image.secureUrl,
-          title: image.title,
-          category: normalizeCategory(image.category),
-          sortOrder: index
-        },
-        create: {
-          imageUrl: image.secureUrl,
-          publicId: image.publicId,
-          title: image.title,
-          category: normalizeCategory(image.category),
-          sortOrder: index
-        }
-      })
-    )
+  const deduped = Array.from(
+    new Map(cloudinaryImages.map((item) => [item.publicId, item])).values()
   );
+
+  await prisma.galleryImage.createMany({
+    data: deduped.map((image, index) => ({
+      imageUrl: image.secureUrl,
+      publicId: image.publicId,
+      title: image.title,
+      category: normalizeCategory(image.category),
+      sortOrder: index
+    })),
+    skipDuplicates: true
+  });
+}
+
+function getCloudinaryPublicIdFromUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.includes("res.cloudinary.com")) {
+      return null;
+    }
+
+    const marker = "/upload/";
+    const pathname = parsed.pathname;
+    const markerIndex = pathname.indexOf(marker);
+    if (markerIndex === -1) {
+      return null;
+    }
+
+    const suffix = pathname.slice(markerIndex + marker.length);
+    const rawParts = suffix.split("/").filter(Boolean);
+    const versionIndex = rawParts.findIndex((part) => /^v\d+$/.test(part));
+    const parts =
+      versionIndex >= 0 ? rawParts.slice(versionIndex + 1) : rawParts;
+
+    if (parts.length === 0) {
+      return null;
+    }
+
+    const last = parts[parts.length - 1];
+    const dotIndex = last.lastIndexOf(".");
+    parts[parts.length - 1] = dotIndex > 0 ? last.slice(0, dotIndex) : last;
+
+    const publicId = parts.join("/").trim();
+    return publicId.length > 0 ? publicId : null;
+  } catch {
+    return null;
+  }
+}
+
+async function bootstrapGalleryFromLocalFileIfEmpty() {
+  const count = await prisma.galleryImage.count();
+  if (count > 0) {
+    return;
+  }
+
+  const localImages = await readJsonFile<LocalGallerySeed[]>("gallery.json", []);
+  if (localImages.length === 0) {
+    return;
+  }
+
+  const data = localImages
+    .map((item, index) => {
+      const cloudinaryPublicId = getCloudinaryPublicIdFromUrl(item.url);
+      const fallbackLocalId = item.id?.trim() || `seed-${index + 1}`;
+      const publicId = cloudinaryPublicId ?? `local:${fallbackLocalId}`;
+      const title = normalizeTitle(item.title ?? item.alt, "School image");
+
+      return {
+        imageUrl: item.url,
+        publicId,
+        title,
+        category: normalizeCategory(item.category),
+        sortOrder: index
+      };
+    })
+    .filter((item) => item.imageUrl && item.imageUrl.trim().length > 0);
+
+  if (data.length === 0) {
+    return;
+  }
+
+  const deduped = Array.from(new Map(data.map((item) => [item.publicId, item])).values());
+  await prisma.galleryImage.createMany({
+    data: deduped,
+    skipDuplicates: true
+  });
 }
 
 export async function listGalleryImages(category?: string): Promise<GalleryImage[]> {
@@ -95,6 +172,9 @@ export async function listGalleryImages(category?: string): Promise<GalleryImage
   if (images.length === 0) {
     try {
       await bootstrapGalleryFromCloudinaryIfEmpty();
+      if ((await prisma.galleryImage.count()) === 0) {
+        await bootstrapGalleryFromLocalFileIfEmpty();
+      }
       images = await prisma.galleryImage.findMany({
         orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }]
       });
@@ -231,7 +311,9 @@ export async function deleteGalleryImageById(id: string) {
     return null;
   }
 
-  await deleteImageFromCloudinary(image.publicId);
+  if (!image.publicId.startsWith("local:")) {
+    await deleteImageFromCloudinary(image.publicId);
+  }
   await prisma.galleryImage.delete({ where: { id } });
   return toClientImage(image);
 }

@@ -108,15 +108,22 @@ export async function deleteImageFromCloudinary(publicId: string) {
 export async function listCloudinaryImagesForSync(limit = 200) {
   ensureCloudinaryConfigured();
   const folder = process.env.CLOUDINARY_FOLDER ?? "dm-public-school";
-  const prefix = folder.trim();
+  const prefix = folder.trim() ? `${folder.trim()}/` : undefined;
 
-  const result = await cloudinary.api.resources({
-    type: "upload",
-    resource_type: "image",
-    max_results: limit,
-    prefix: prefix ? `${prefix}/` : undefined,
-    direction: "desc"
-  });
+  const fetchResources = async (nextPrefix?: string) =>
+    cloudinary.api.resources({
+      type: "upload",
+      resource_type: "image",
+      max_results: limit,
+      prefix: nextPrefix,
+      direction: "desc"
+    });
+
+  let result = await fetchResources(prefix);
+  if ((result.resources?.length ?? 0) === 0 && prefix) {
+    // Fallback in case CLOUDINARY_FOLDER doesn't match historical uploads.
+    result = await fetchResources();
+  }
 
   const resources = (result.resources ?? []) as Array<{
     public_id: string;
@@ -127,7 +134,10 @@ export async function listCloudinaryImagesForSync(limit = 200) {
   return resources.map((item) => ({
     publicId: item.public_id,
     secureUrl: item.secure_url,
-    title: normalizeContextText(item.context?.custom?.caption, titleFromPublicId(item.public_id)),
+    title: normalizeContextText(
+      item.context?.custom?.caption,
+      titleFromPublicId(item.public_id)
+    ),
     category: normalizeContextText(item.context?.custom?.category, "Campus")
   }));
 }
