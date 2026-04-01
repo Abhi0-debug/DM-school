@@ -54,7 +54,7 @@ export function Navbar() {
                   scrolled ? "text-slate-900" : "text-white drop-shadow-md"
                 }`}
               >
-                DM Public School
+                D.M. Public School
               </p>
             </div>
           </Link>

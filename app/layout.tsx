@@ -21,16 +21,16 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").re
   /\/+$/,
   ""
 );
-const homeTitle = "DM Public School Puri | Admissions Open 2026";
+const homeTitle = "D.M. Public School Puri | Admissions Open 2026";
 const ogImagePath = "/images/New Building.jpeg";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: homeTitle,
-    template: "%s | DM Public School Puri"
+    template: "%s | D.M. Public School Puri"
   },
-  applicationName: "DM Public School Puri",
+  applicationName: "D.M. Public School Puri",
   alternates: {
     canonical: "/"
   },
