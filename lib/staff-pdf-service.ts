@@ -15,11 +15,22 @@ interface StaffPdfRecord {
 }
 
 const STAFF_PDFS_FILE = "staff-pdfs.json";
+const STAFF_PDFS_STORAGE_PATH = "staff-pdfs/records.json";
 const LOCAL_PUBLIC_PDF_PREFIX = "/uploads/staff-pdfs/";
 const localStaffPdfDir = path.join(process.cwd(), "public", "uploads", "staff-pdfs");
+const STORAGE_CONTENT_TYPES = [
+  "application/json",
+  "text/plain",
+  "application/octet-stream",
+  "application/pdf"
+];
 
 function normalizeText(value: string) {
   return value.trim();
+}
+
+function isProductionRuntime() {
+  return process.env.NODE_ENV === "production";
 }
 
 function sanitizeFilename(name: string) {
@@ -28,6 +39,15 @@ function sanitizeFilename(name: string) {
 
 function getDocumentsBucket() {
   return process.env.SUPABASE_DOCUMENTS_BUCKET ?? "documents";
+}
+
+function isNotFoundStorageError(message: string) {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("not found") ||
+    normalized.includes("404") ||
+    normalized.includes("does not exist")
+  );
 }
 
 function createStoragePath(filename: string) {
@@ -88,8 +108,15 @@ async function writePdfFile(file: File) {
     }
 
     return { storagePath, publicUrl: data.publicUrl };
-  } catch {
-    // If Supabase RLS/policy blocks this upload path, fallback to local storage.
+  } catch (error) {
+    if (isProductionRuntime()) {
+      const message = error instanceof Error ? error.message : "Unknown storage error.";
+      throw new Error(
+        `Failed to upload staff PDF to storage: ${message}. In production, configure SUPABASE_URL and SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) with write access to bucket '${getDocumentsBucket()}'.`
+      );
+    }
+
+    // Local development fallback.
     return writePdfFileLocal(file);
   }
 }
@@ -108,7 +135,8 @@ async function removePdfFile(storagePath: string) {
     try {
       await fs.unlink(absolutePath);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== "ENOENT" && code !== "EROFS" && code !== "EPERM") {
         throw error;
       }
     }
@@ -128,6 +156,96 @@ async function removePdfFile(storagePath: string) {
   }
 }
 
+async function readRecordsFromStorage() {
+  const supabase = getSupabaseAdminClient();
+  const bucket = getDocumentsBucket();
+  const { data, error } = await supabase.storage.from(bucket).download(STAFF_PDFS_STORAGE_PATH);
+
+  if (error) {
+    if (isNotFoundStorageError(error.message)) {
+      return [] as StaffPdfRecord[];
+    }
+
+    throw new Error(`Failed to load staff PDF records: ${error.message}`);
+  }
+
+  const raw = await data.text();
+  if (!raw.trim()) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? (parsed as StaffPdfRecord[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeRecordsToStorage(records: StaffPdfRecord[]) {
+  const supabase = getSupabaseAdminClient();
+  const bucket = getDocumentsBucket();
+  const body = Buffer.from(JSON.stringify(records, null, 2), "utf8");
+
+  let lastErrorMessage = "";
+
+  for (const contentType of STORAGE_CONTENT_TYPES) {
+    const { error } = await supabase.storage.from(bucket).upload(STAFF_PDFS_STORAGE_PATH, body, {
+      contentType,
+      upsert: true
+    });
+
+    if (!error) {
+      return;
+    }
+
+    lastErrorMessage = error.message;
+    const normalized = error.message.toLowerCase();
+    const isMimeRestriction =
+      normalized.includes("mime type") && normalized.includes("not supported");
+    const isRlsPolicyError = normalized.includes("row-level security policy");
+
+    if (isRlsPolicyError) {
+      throw new Error(
+        "Failed to persist staff PDF records: storage write blocked by row-level security policy. Set SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY) to a service-role/secret key in deployment."
+      );
+    }
+
+    if (!isMimeRestriction) {
+      throw new Error(`Failed to persist staff PDF records: ${error.message}`);
+    }
+  }
+
+  throw new Error(
+    `Failed to persist staff PDF records: ${lastErrorMessage || "Unknown storage error."}`
+  );
+}
+
+async function loadRecords(options?: { tolerateErrors?: boolean }) {
+  if (!isProductionRuntime()) {
+    return readJsonFile<StaffPdfRecord[]>(STAFF_PDFS_FILE, []);
+  }
+
+  try {
+    return await readRecordsFromStorage();
+  } catch (error) {
+    if (options?.tolerateErrors) {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+async function persistRecords(records: StaffPdfRecord[]) {
+  if (!isProductionRuntime()) {
+    await writeJsonFile(STAFF_PDFS_FILE, records);
+    return;
+  }
+
+  await writeRecordsToStorage(records);
+}
+
 export function ensurePdfFile(file: File) {
   const lower = file.name.toLowerCase();
   const isPdfByType = file.type === "application/pdf";
@@ -139,7 +257,7 @@ export function ensurePdfFile(file: File) {
 }
 
 export async function listStaffPdfRecords() {
-  return readJsonFile<StaffPdfRecord[]>(STAFF_PDFS_FILE, []);
+  return loadRecords({ tolerateErrors: true });
 }
 
 export async function getStaffPdfRecordMapByStaffId() {
@@ -160,7 +278,7 @@ export async function upsertStaffPdfForStaff(
   }
 
   const normalizedTitle = normalizeText(title);
-  const records = await listStaffPdfRecords();
+  const records = await loadRecords();
   const existing = records.find((item) => item.staffId === normalizedStaffId);
 
   const uploaded = await writePdfFile(file);
@@ -178,7 +296,13 @@ export async function upsertStaffPdfForStaff(
 
   const nextRecords = records.filter((item) => item.staffId !== normalizedStaffId);
   nextRecords.push(nextRecord);
-  await writeJsonFile(STAFF_PDFS_FILE, nextRecords);
+
+  try {
+    await persistRecords(nextRecords);
+  } catch (error) {
+    await removePdfFile(uploaded.storagePath).catch(() => undefined);
+    throw error;
+  }
 
   if (existing?.filePath) {
     await removePdfFile(existing.filePath).catch(() => undefined);
@@ -193,14 +317,14 @@ export async function removeStaffPdfForStaff(staffId: string) {
     return null;
   }
 
-  const records = await listStaffPdfRecords();
+  const records = await loadRecords();
   const existing = records.find((item) => item.staffId === normalizedStaffId);
   if (!existing) {
     return null;
   }
 
   const nextRecords = records.filter((item) => item.staffId !== normalizedStaffId);
-  await writeJsonFile(STAFF_PDFS_FILE, nextRecords);
+  await persistRecords(nextRecords);
   await removePdfFile(existing.filePath).catch(() => undefined);
 
   return existing;
