@@ -35,8 +35,16 @@ export function NoticeBoard({ initialNotices }: NoticeBoardProps) {
   }, [initialNotices, tab]);
 
   return (
-    <section id="notices" className="section-shell section-spacing overflow-x-hidden sm:overflow-x-visible">
-      <SectionHeading title="Notice Board" subtitle="Daily Updates, Holidays & Important Alerts" />
+    <section
+      id="notices"
+      className="section-shell section-spacing overflow-x-hidden sm:overflow-x-visible"
+      aria-labelledby="notices-heading"
+    >
+      <SectionHeading
+        title="Notice Board"
+        subtitle="Daily Updates, Holidays & Important Alerts"
+        headingId="notices-heading"
+      />
 
       <div className="mt-6 flex flex-wrap gap-2">
         {noticeTabs.map((item) => (

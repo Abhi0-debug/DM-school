@@ -31,7 +31,7 @@ export function Logo({
       >
         <Image
           src={siteConfig.logo.imagePath}
-          alt={`${siteConfig.shortName} logo`}
+          alt="DM Public School Puri logo"
           fill
           className="object-contain p-1"
           sizes={`${size}px`}
@@ -50,7 +50,7 @@ export function Logo({
         isDarkModeSurface ? "border-brand-200" : "border-white/25"
       }`}
       data-surface={mode}
-      aria-label={`${siteConfig.shortName} placeholder logo`}
+      aria-label="DM Public School Puri placeholder logo"
     >
       <div
         className={`absolute inset-0 ${

@@ -41,11 +41,16 @@ export function NewsletterSection() {
   };
 
   return (
-    <section className="section-shell section-spacing">
+    <section
+      id="newsletter"
+      className="section-shell section-spacing"
+      aria-labelledby="newsletter-heading"
+    >
       <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-brand-50 to-white p-6 shadow-soft dark:border-slate-700 dark:from-brand-900/25 dark:to-slate-900 sm:p-8">
         <SectionHeading
           title="Newsletter"
           subtitle="Get School Updates In Your Inbox"
+          headingId="newsletter-heading"
         />
         <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-3 sm:flex-row">
           <label className="sr-only" htmlFor="newsletter-email">

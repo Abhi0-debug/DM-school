@@ -42,9 +42,17 @@ export function EventsSection({ initialEvents }: EventsSectionProps) {
   const examEvents = filteredEvents.filter((event) => event.type === "exam");
 
   return (
-    <section id="events" className="section-shell section-spacing">
+    <section
+      id="events"
+      className="section-shell section-spacing"
+      aria-labelledby="events-heading"
+    >
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <SectionHeading title="Events" subtitle="Upcoming Events & Exam Schedule" />
+        <SectionHeading
+          title="Events"
+          subtitle="Upcoming Events & Exam Schedule"
+          headingId="events-heading"
+        />
         <label className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 sm:w-auto sm:justify-start dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
           <span className="shrink-0">Filter month</span>
           <select

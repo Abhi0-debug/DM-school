@@ -18,7 +18,7 @@ export function Footer() {
               <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
                 <Image
                   src={siteConfig.logo.imagePath}
-                  alt={`${siteConfig.shortName} logo`}
+                  alt="DM Public School Puri logo"
                   fill
                   sizes="40px"
                   className="object-contain p-1"

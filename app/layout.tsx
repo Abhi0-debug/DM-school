@@ -17,13 +17,22 @@ const poppins = Poppins({
   display: "swap"
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(
+  /\/+$/,
+  ""
+);
+const homeTitle = "DM Public School Puri | Admissions Open 2026";
+const ogImagePath = "/images/New Building.jpeg";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "DM Public School",
-    template: "%s | DM Public School"
+    default: homeTitle,
+    template: "%s | DM Public School Puri"
+  },
+  applicationName: "DM Public School Puri",
+  alternates: {
+    canonical: "/"
   },
   icons: {
     icon: "/CICA LOGO 3.png",
@@ -31,26 +40,52 @@ export const metadata: Metadata = {
     apple: "/CICA LOGO 3.png"
   },
   description: siteConfig.description,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1
+    }
+  },
   openGraph: {
-    title: "DM Public School",
+    title: homeTitle,
     description: siteConfig.description,
-    url: siteUrl,
-    siteName: "DM Public School",
+    url: "/",
+    siteName: "DM Public School Puri",
     locale: "en_IN",
-    type: "website"
+    type: "website",
+    images: [
+      {
+        url: ogImagePath,
+        width: 1200,
+        height: 630,
+        alt: "DM Public School Puri campus building"
+      }
+    ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "DM Public School",
-    description: siteConfig.description
+    title: homeTitle,
+    description: siteConfig.description,
+    images: [ogImagePath]
   },
   keywords: [
-    "DM Public School",
-    "School Website",
-    "Admissions",
-    "Academic Events",
-    "Notice Board"
-  ]
+    "DM Public School Puri",
+    "School in Puri Odisha",
+    "Admissions Open 2026",
+    "Best school in Puri",
+    "CBSE school in Puri",
+    "DM Public School admissions"
+  ],
+  category: "education",
+  other: {
+    "geo.region": "IN-OR",
+    "geo.placename": "Puri, Odisha"
+  }
 };
 
 export const viewport: Viewport = {

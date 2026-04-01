@@ -95,10 +95,18 @@ export function ContactSection({ initialChallenge = fallbackChallenge }: Contact
   };
 
   return (
-    <section id="contact" className="section-shell section-spacing">
+    <section
+      id="contact"
+      className="section-shell section-spacing"
+      aria-labelledby="contact-heading"
+    >
       <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
-          <SectionHeading title="Contact" subtitle="Lets Connect With You" />
+          <SectionHeading
+            title="Contact"
+            subtitle="Lets Connect With You"
+            headingId="contact-heading"
+          />
           <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
             Reach out for admissions, transport details, fee structure, or campus
             visits. Our team will respond shortly.

@@ -10,8 +10,16 @@ export function StaffSection({ initialMembers }: StaffSectionProps) {
   const members = initialMembers ?? [];
 
   return (
-    <section id="staff" className="section-shell section-spacing">
-      <SectionHeading title="Faculty" subtitle="Meet Our Teaching Team" />
+    <section
+      id="staff"
+      className="section-shell section-spacing"
+      aria-labelledby="staff-heading"
+    >
+      <SectionHeading
+        title="Faculty"
+        subtitle="Meet Our Teaching Team"
+        headingId="staff-heading"
+      />
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {members.map((member) => {
@@ -20,7 +28,7 @@ export function StaffSection({ initialMembers }: StaffSectionProps) {
               <div className="relative h-52 overflow-hidden rounded-t-2xl">
                 <Image
                   src={member.photo}
-                  alt={member.name}
+                  alt={`${member.name}, ${member.subject} teacher at DM Public School Puri`}
                   width={960}
                   height={640}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"

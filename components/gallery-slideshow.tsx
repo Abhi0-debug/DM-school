@@ -10,6 +10,15 @@ interface GallerySlideshowProps {
   initialImages: GalleryImage[];
 }
 
+function getGalleryAltText(image: GalleryImage) {
+  const explicitText = (image.title ?? image.alt ?? "").trim();
+  if (explicitText.length > 0) {
+    return explicitText;
+  }
+
+  return `${image.category} activity at DM Public School Puri`;
+}
+
 export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
   const images = initialImages;
   const [activeIndex, setActiveIndex] = useState(0);
@@ -131,10 +140,15 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
 
   if (images.length === 0) {
     return (
-      <section id="gallery" className="section-shell section-spacing">
+      <section
+        id="gallery"
+        className="section-shell section-spacing"
+        aria-labelledby="gallery-heading"
+      >
         <SectionHeading
           title="Gallery"
           subtitle="Campus Moments & Student Activities"
+          headingId="gallery-heading"
         />
         <p className="mt-6 text-sm text-slate-600 dark:text-slate-300">
           No gallery images available yet. Add images from the admin panel.
@@ -144,11 +158,16 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
   }
 
   return (
-    <section id="gallery" className="section-shell section-spacing">
+    <section
+      id="gallery"
+      className="section-shell section-spacing"
+      aria-labelledby="gallery-heading"
+    >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <SectionHeading
           title="Gallery"
           subtitle="Campus Moments & Student Activities"
+          headingId="gallery-heading"
         />
       </div>
 
@@ -172,7 +191,7 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
             >
               <Image
                 src={image.url}
-                alt={image.title ?? image.alt}
+                alt={getGalleryAltText(image)}
                 fill
                 priority={index === 0}
                 sizes="100vw"
@@ -183,7 +202,7 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
               {index === activeIndex ? (
                 <button
                   type="button"
-                  aria-label={`Open full image: ${image.title ?? image.alt}`}
+                  aria-label={`Open full image: ${getGalleryAltText(image)}`}
                   onClick={openPreview}
                   className="absolute inset-0 z-[1] cursor-zoom-in"
                 >
@@ -197,7 +216,7 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
                   {image.category}
                 </p>
                 <p className="mt-3 max-w-3xl text-lg font-semibold sm:text-2xl">
-                  {image.title ?? image.alt}
+                  {getGalleryAltText(image)}
                 </p>
               </div>
             </div>
@@ -292,7 +311,7 @@ export function GallerySlideshow({ initialImages }: GallerySlideshowProps) {
           >
             <Image
               src={previewImage.url}
-              alt={previewImage.title ?? previewImage.alt}
+              alt={getGalleryAltText(previewImage)}
               fill
               unoptimized
               sizes="100vw"

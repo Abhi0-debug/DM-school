@@ -28,7 +28,7 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main id="main-content" aria-label="DM Public School Puri homepage">
         <Suspense fallback={<HeroSkeleton />}>
           <HeroSectionContent />
         </Suspense>

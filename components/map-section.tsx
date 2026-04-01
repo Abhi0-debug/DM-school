@@ -6,15 +6,22 @@ const mapUrl =
 
 export function MapSection() {
   return (
-    <section className="section-shell section-spacing pt-6">
+    <section
+      id="location"
+      className="section-shell section-spacing pt-6"
+      aria-labelledby="location-heading"
+    >
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft dark:border-slate-700 dark:bg-slate-900">
         <div className="border-b border-slate-200 px-4 py-4 sm:px-5 dark:border-slate-700">
           <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-600">
             Campus Location
           </p>
-          <h3 className="mt-1 break-words text-xl font-semibold text-slate-900 dark:text-white">
+          <h2
+            id="location-heading"
+            className="mt-1 break-words text-xl font-semibold text-slate-900 dark:text-white"
+          >
             Visit {siteConfig.name}
-          </h3>
+          </h2>
         </div>
         <iframe
           src={mapUrl}

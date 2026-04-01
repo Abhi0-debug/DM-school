@@ -15,6 +15,15 @@ function normalizeCategory(value: string) {
   return value.trim().toLowerCase();
 }
 
+function getGalleryAltText(image: GalleryImage) {
+  const explicitText = (image.title ?? image.alt ?? "").trim();
+  if (explicitText.length > 0) {
+    return explicitText;
+  }
+
+  return `${image.category} activity at DM Public School Puri`;
+}
+
 export function Gallery({ initialImages, externalImageId }: GalleryProps) {
   const images = initialImages;
   const [viewerImages, setViewerImages] = useState<GalleryImage[]>([]);
@@ -92,11 +101,16 @@ export function Gallery({ initialImages, externalImageId }: GalleryProps) {
   const canNavigate = viewerImages.length > 1;
 
   return (
-    <section id="gallery" className="section-shell section-spacing">
+    <section
+      id="gallery"
+      className="section-shell section-spacing"
+      aria-labelledby="gallery-heading"
+    >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <SectionHeading
           title="Gallery"
           subtitle="Campus Moments & Student Activities"
+          headingId="gallery-heading"
         />
         <p className="hidden text-sm text-slate-600 md:block dark:text-slate-300">
           Auto-fetched from cloud storage or local data.
@@ -120,7 +134,7 @@ export function Gallery({ initialImages, externalImageId }: GalleryProps) {
             ) : null}
             <Image
               src={image.url}
-              alt={image.title ?? image.alt}
+              alt={getGalleryAltText(image)}
               fill
               loading="lazy"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
@@ -138,7 +152,7 @@ export function Gallery({ initialImages, externalImageId }: GalleryProps) {
                 {image.category}
               </p>
               <p className="mt-1 line-clamp-2 text-base font-semibold sm:text-lg">
-                {image.title ?? image.alt}
+                {getGalleryAltText(image)}
               </p>
             </div>
           </button>
@@ -212,7 +226,7 @@ export function Gallery({ initialImages, externalImageId }: GalleryProps) {
           >
             <Image
               src={activeImage.url}
-              alt={activeImage.title ?? activeImage.alt}
+              alt={getGalleryAltText(activeImage)}
               fill
               sizes="100vw"
               quality={86}

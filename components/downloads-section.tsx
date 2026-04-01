@@ -9,8 +9,16 @@ interface DownloadsSectionProps {
 
 export function DownloadsSection({ items }: DownloadsSectionProps) {
   return (
-    <section className="section-shell section-spacing">
-      <SectionHeading title="Downloads" subtitle="PDF Notices & Important Documents" />
+    <section
+      id="downloads"
+      className="section-shell section-spacing"
+      aria-labelledby="downloads-heading"
+    >
+      <SectionHeading
+        title="Downloads"
+        subtitle="PDF Notices & Important Documents"
+        headingId="downloads-heading"
+      />
 
       <div className="mt-8 space-y-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-soft dark:border-slate-700 dark:bg-slate-900">
         {items.length === 0 ? (

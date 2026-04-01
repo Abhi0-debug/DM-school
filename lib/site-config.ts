@@ -3,7 +3,7 @@ export const siteConfig = {
   shortName: "DMPS",
   tagline: "Commited To Serve",
   description:
-    "D.M. Public School is dedicated to academic excellence, modern learning, and building confident future leaders.",
+    "Admissions Open 2026 at DM Public School Puri, a leading school in Puri, Odisha focused on academic excellence, modern learning, and student growth.",
   logo: {
     mode: "image",
     imagePath: "/CICA LOGO 3.png",
