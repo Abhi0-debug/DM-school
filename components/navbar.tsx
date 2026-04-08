@@ -40,8 +40,8 @@ export function Navbar() {
         scrolled ? "top-0" : "top-[48px]"
       } ${
         scrolled
-          ? "bg-white shadow-md border-b border-slate-200"
-          : "bg-white/80 backdrop-blur-md border-b border-slate-200/50"
+          ? "bg-white/90 supports-[backdrop-filter]:bg-white/80 backdrop-blur-xl backdrop-saturate-150 shadow-md border-b border-slate-200/60"
+          : "bg-white/80 supports-[backdrop-filter]:bg-white/60 backdrop-blur-xl backdrop-saturate-150 border-b border-white/40"
       }`}
     >
       <div className="section-shell flex items-center justify-between py-3">

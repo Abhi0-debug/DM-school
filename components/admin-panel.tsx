@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   Loader2,
   LogOut,
+  Megaphone,
   MapPin,
   Menu,
   Pencil,
@@ -60,12 +61,14 @@ import {
 } from "@/lib/types";
 import { AdminStaffManager } from "@/components/admin-staff-manager";
 import { AdminDocumentsManager } from "@/components/admin-documents-manager";
+import { AdminAnnouncementsManager } from "@/components/admin-announcements-manager";
 
 
 type SectionKey =
   | "overview"
   | "events"
   | "notices"
+  | "announcements"
   | "gallery"
   | "documents"
   | "staff"
@@ -129,6 +132,7 @@ const sidebarItems: Array<{
   { key: "popup", label:"Event Popup", icon: ImageIcon},
   { key: "events", label: "Events", icon: CalendarDays },
   { key: "notices", label: "Notices", icon: Bell },
+  { key: "announcements", label: "Announcements", icon: Megaphone },
   { key: "gallery", label: "Gallery", icon: ImageIcon },
   { key: "documents", label: "Documents", icon: FileText },
   { key: "staff", label: "Staff", icon: Shield },
@@ -1311,6 +1315,13 @@ export function AdminPanel() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => setActiveSection("announcements")}
+                    className="min-h-[44px] rounded-full bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700"
+                  >
+                    Add Announcement
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setActiveSection("gallery")}
                     className="min-h-[44px] rounded-full bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-700"
                   >
@@ -1859,6 +1870,13 @@ export function AdminPanel() {
                 </DndContext>
               )}
             </div>
+          ) : null}
+          {activeSection === "announcements" ? (
+            <AdminAnnouncementsManager
+              apiRequest={apiRequest}
+              addToast={addToast}
+              requestConfirm={requestConfirm}
+            />
           ) : null}
           {activeSection === "gallery" ? (
             <div className="space-y-6">

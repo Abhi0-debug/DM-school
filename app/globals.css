@@ -66,18 +66,15 @@ h4 {
 }
 
 @keyframes marquee {
-  0%{
+  0% {
     transform: translateX(0%);
   }
   100% {
-    transform: translateX(-50%);
-
+    transform: translateX(-100%);
   }
-
 }
 
 .animate-marquee {
-  display: inline-block;
-  width: max-content;
+  will-change: transform;
   animation: marquee 20s linear infinite;
 }

@@ -32,7 +32,7 @@ export default function HomePage() {
       <AnnouncementBar />
       <Navbar />
 
-      {/* ✅ UPDATED BANNER */}
+      {/* ✅ UPDATED BANNER
       <AdmissionBanner
         banners={[
           {
@@ -60,7 +60,7 @@ export default function HomePage() {
             subtitle: "Apply now before it’s too late",
           },
         ]}
-      />
+      /> */}
 
       <main id="main-content" aria-label="D.M Public School Puri homepage">
         <Suspense fallback={<HeroSkeleton />}>

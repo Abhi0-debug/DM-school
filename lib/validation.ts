@@ -39,6 +39,28 @@ export const noticeSchema = z.object({
   type: z.enum(["daily", "holiday", "alert"])
 });
 
+export const announcementCreateSchema = z.object({
+  text: z
+    .string()
+    .trim()
+    .min(1, "Announcement text is required.")
+    .max(500, "Announcement text must be 500 characters or less."),
+  isActive: z.boolean().optional()
+});
+
+export const announcementUpdateSchema = z.object({
+  text: z
+    .string()
+    .trim()
+    .min(1, "Announcement text is required.")
+    .max(500, "Announcement text must be 500 characters or less."),
+  isActive: z.boolean()
+});
+
+export const announcementStatusSchema = z.object({
+  isActive: z.boolean()
+});
+
 export const imageSchema = z.object({
   url: assetUrlSchema,
   alt: z.string().min(3),
