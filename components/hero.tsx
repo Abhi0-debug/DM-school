@@ -12,16 +12,13 @@ interface HeroProps {
   admissionsText: string;
 }
 
-export function Hero({ initialSlides, admissionsText }: HeroProps) {
+export function Hero({ initialSlides }: HeroProps) {
   const slides = initialSlides;
   const [activeIndex, setActiveIndex] = useState(0);
-  const bannerText = admissionsText.trim();
   const hasSlides = slides.length > 0;
 
   useEffect(() => {
-    if (!hasSlides || slides.length < 2) {
-      return;
-    }
+    if (!hasSlides || slides.length < 2) return;
 
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % slides.length);
@@ -35,15 +32,14 @@ export function Hero({ initialSlides, admissionsText }: HeroProps) {
     [activeIndex, hasSlides, slides]
   );
 
-  if (!hasSlides) {
-    return null;
-  }
+  if (!hasSlides) return null;
 
   return (
     <section
       id="home"
-      className="relative flex h-screen min-h-[100svh] items-end overflow-hidden bg-hero-gradient pt-24"
+      className="relative flex h-screen min-h-[100svh] items-end overflow-hidden bg-hero-gradient pt-[160px]"
     >
+      {/* 🔹 BACKGROUND */}
       {slides.map((slide, index) => (
         <Image
           key={slide.id}
@@ -51,82 +47,71 @@ export function Hero({ initialSlides, admissionsText }: HeroProps) {
           alt={slide.alt}
           fill
           priority={index === 0}
-          loading={index === 0 ? "eager" : "lazy"}
-          sizes="100vw"
-          quality={82}
-          className={`object-cover object-center transition-all duration-1000 ${
-            activeIndex === index ? "opacity-100 scale-105" : "opacity-0 scale-100"
+          className={`object-cover transition-all duration-1000 ${
+            activeIndex === index ? "opacity-100 scale-105" : "opacity-0"
           }`}
         />
       ))}
 
+      {/* 🔹 OVERLAYS */}
       <div className="absolute inset-0 bg-black/50" />
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/55 to-slate-950/45" />
 
-      <div className="section-shell relative z-10 pb-16 pt-32 text-white sm:pb-24 sm:pt-40">
-        <div className="mx-auto flex w-full max-w-4xl flex-col items-center text-center">
-          {bannerText ? (
-            <p
-              className="inline-flex max-w-full animate-rise-in rounded-full border border-white/25 bg-white/10 px-4 py-2 text-center text-xs font-semibold uppercase leading-tight tracking-[0.2em] backdrop-blur-md sm:px-5 sm:text-sm md:text-base md:tracking-[0.25em]"
-              style={{ animationDelay: "0ms" }}
-            >
-              {bannerText}
-            </p>
-          ) : null}
+      {/* 🔹 CONTENT */}
+      <div className="section-shell relative z-10 pb-20 pt-10 text-white sm:pb-28">
+        <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
 
-          <div
-            className="mt-8 flex animate-rise-in flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5"
-            style={{ animationDelay: "80ms" }}
-          >
+          {/* LOGO + TITLE */}
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
             <div className="scale-125 sm:scale-150 md:scale-175">
               <Logo mode="light" variant="hero" />
             </div>
-            <h1 className="max-w-3xl break-words text-3xl font-bold leading-tight sm:text-5xl lg:text-6xl">
+
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold">
               {siteConfig.name}
             </h1>
           </div>
 
-          <p
-            className="mt-6 max-w-2xl animate-rise-in text-base text-slate-100 sm:text-lg"
-            style={{ animationDelay: "160ms" }}
-          >
+          {/* TAGLINE */}
+          <p className="mt-6 max-w-2xl text-base text-slate-100 sm:text-lg">
             {siteConfig.tagline}
           </p>
 
-          <div
-            className="mt-10 flex flex-wrap items-center justify-center gap-4 animate-rise-in"
-            style={{ animationDelay: "220ms" }}
-          >
+          {/* BUTTONS */}
+          <div className="mt-10 flex gap-4">
             <Link
               href="#gallery"
-              className="inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-blue-700 sm:w-auto"
+              className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:scale-105 hover:bg-blue-700 transition"
             >
               Explore
             </Link>
+
             <Link
               href="#contact"
-              className="inline-flex min-h-[44px] w-full items-center justify-center rounded-full border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all duration-300 hover:scale-105 hover:bg-white/20 sm:w-auto"
+              className="rounded-full border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md hover:scale-105 hover:bg-white/20 transition"
             >
               Contact
             </Link>
           </div>
         </div>
 
-        <div className="mt-12 flex items-center justify-center gap-2">
+        {/* DOTS */}
+        <div className="mt-12 flex justify-center gap-2">
           {slides.map((slide, index) => (
             <button
               key={slide.id}
-              type="button"
-              className={`h-2.5 rounded-full transition-all duration-300 ${
+              className={`h-2.5 rounded-full ${
                 index === activeIndex ? "w-7 bg-white" : "w-2.5 bg-white/50"
               }`}
               onClick={() => setActiveIndex(index)}
-              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
 
-        <p className="mt-4 break-words text-center text-xs text-slate-200/80">{current?.alt}</p>
+        {/* SLIDE TEXT */}
+        <p className="mt-4 text-center text-xs text-slate-200/80">
+          {current?.alt}
+        </p>
       </div>
     </section>
   );

@@ -58,3 +58,26 @@ h4 {
     scroll-behavior: auto !important;
   }
 }
+
+/* Swiper fix */
+.swiper-slide {
+  display: flex;
+  height: auto;
+}
+
+@keyframes marquee {
+  0%{
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+
+  }
+
+}
+
+.animate-marquee {
+  display: inline-block;
+  width: max-content;
+  animation: marquee 20s linear infinite;
+}

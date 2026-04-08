@@ -1,6 +1,12 @@
+"use client";
 import Image from "next/image";
 import { StaffMember } from "@/lib/types";
 import { SectionHeading } from "@/components/section-heading";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import { Autoplay } from "swiper/modules";
+import "swiper/css/autoplay";
+import { useState } from "react";
 
 interface StaffSectionProps {
   initialMembers?: StaffMember[];
@@ -8,6 +14,8 @@ interface StaffSectionProps {
 
 export function StaffSection({ initialMembers }: StaffSectionProps) {
   const members = initialMembers ?? [];
+
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
     <section
@@ -21,62 +29,88 @@ export function StaffSection({ initialMembers }: StaffSectionProps) {
         headingId="staff-heading"
       />
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {members.map((member) => {
-          const cardContent = (
-            <>
-              <div className="relative h-52 overflow-hidden rounded-t-2xl">
-                <Image
-                  src={member.photo}
-                  alt={`${member.name}, ${member.subject} teacher at DM Public School Puri`}
-                  width={960}
-                  height={640}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                  loading="lazy"
-                  quality={80}
-                  className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="break-words text-lg font-semibold text-slate-900 dark:text-slate-100">
-                  {member.name}
-                </h3>
-                <p className="break-words text-sm font-medium text-brand-700 dark:text-brand-300">
-                  {member.subject}
-                </p>
-                <p className="mt-2 break-words text-sm text-slate-600 dark:text-slate-300">
-                  {member.bio}
-                </p>
-              </div>
-            </>
-          );
+      {}   {/*swiper */}
+      <div className="mt-8">
+        <Swiper
+          modules={[Autoplay]}
+          spaceBetween={20}
+          slidesPerView={1}
+          breakpoints={{
+            640:  { slidesPerView: 2 },
+            768:  { slidesPerView: 2 },
+            1024: { slidesPerView: 4 },
+          }}
+          autoplay={{
+            delay: 2500,
+            disableOnInteraction: false,
+          }}
+          loop={true}
+          grabCursor={true}
+          className="w-auto"
+        >
+          {members.map((member) => {
+            const cardClassName =
+              "group block h-full flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-900";
 
-          const cardClassName =
-            "group block min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-900";
+            const cardContent = (
+              <>
+                <div className="relative h-52 overflow-hidden rounded-t-2xl">
+                  <Image
+                    src={member.photo}
+                    alt={`${member.name}, ${member.subject} teacher at D.M. Public School Puri`}
+                    fill
+                    className="object-cover object-top transition duration-500 group-hover:scale-105"
+                  />
+                </div>
 
-          if (member.pdfUrl) {
-            return (
-              <a
-                key={member.id}
-                href={member.pdfUrl}
-                download
-                className={cardClassName}
-                aria-label={`Download ${member.name} PDF`}
-                title={member.pdfTitle ?? `${member.name} PDF`}
-              >
-                {cardContent}
-              </a>
+                <div className="p-4 flex flex-col justify-between h-full">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2">
+                    {member.name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())}
+                  </h3>
+
+                  <p className="text-sm font-medium text-brand-700 dark:text-brand-300">
+                    {member.subject}
+                  </p>
+
+                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3 min-h-[4.5rem]">
+                    {member.bio}
+                  </p>
+                  <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setExpandedId(expandedId === member.id ? null : member.id);
+                  }}
+                  className="mt-1 text-sm font-medium text-brand-600 hover:underline"
+                  >
+                    {expandedId === member.id ? "Read less" : "Read more"}
+                  </button>
+                </div>
+              </>
             );
-          }
 
-          return (
-            <article key={member.id} className={cardClassName}>
-              {cardContent}
-            </article>
-          );
-        })}
+            return (
+              <SwiperSlide key={member.id} className="h-auto">
+                {member.pdfUrl ? (
+                  <a
+                    href={member.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cardClassName}
+                  >
+                    {cardContent}
+                  </a>
+                ) : (
+                  <article className={cardClassName}>
+                    {cardContent}
+                  </article>
+                )}
+              </SwiperSlide>
+            );
+          })}
+        </Swiper>
       </div>
+      {}
     </section>
   );
 }
-
