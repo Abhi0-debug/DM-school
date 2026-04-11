@@ -85,7 +85,10 @@ export function AdmissionBanner({ banners = [] }: AdmissionBannerProps) {
               {banners.map((_, index) => (
                 <button
                   key={index}
+                  type="button"
                   onClick={() => setActive(index)}
+                  aria-label={`Show admission banner ${index + 1}`}
+                  aria-pressed={index === active}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
                     index === active
                       ? "w-6 bg-white"

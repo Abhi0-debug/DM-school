@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "D.M. Public School,Puri",
+  name: "D.M Public School,Puri",
   shortName: "DMPS",
   tagline: "Commited To Serve",
   description:
@@ -13,7 +13,7 @@ export const siteConfig = {
     email: "dmpublicschoolpuri@gmail.com",
     phone:
       "+91 8339012220, +91 9938702859, +91 8658252927 (Office)",
-    address: "D.M. Public School, Plot no 408, Puri 1, beside Hanuman Temple, near Dr.Baren Pattanaik Eye Clinic, Duttatota, Puri, Odisha 752001"
+    address: "D.M Public School, Plot no 408, Puri 1, beside Hanuman Temple, near Dr.Baren Pattanaik Eye Clinic, Duttatota, Puri, Odisha 752001"
   },
   socials: {
     whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "918658252927",
@@ -25,4 +25,3 @@ export const siteConfig = {
       "https://youtube.com/@dmpublicschoolpuri?si=TZD4J29foT59RGLe"
   }
 };
-

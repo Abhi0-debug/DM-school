@@ -57,7 +57,7 @@ export function StaffSection({ initialMembers }: StaffSectionProps) {
                 <div className="relative h-52 overflow-hidden rounded-t-2xl">
                   <Image
                     src={member.photo}
-                    alt={`${member.name}, ${member.subject} teacher at D.M. Public School Puri`}
+                    alt={`${member.name}, ${member.subject} teacher at D.M Public School Puri`}
                     fill
                     className="object-cover object-top transition duration-500 group-hover:scale-105"
                   />

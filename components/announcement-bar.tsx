@@ -82,7 +82,7 @@ export function AnnouncementBar() {
   return (
     <div className="fixed top-0 left-0 w-full z-40 bg-green-600 text-white h-12 flex items-center overflow-hidden">
       {/* LEFT STATIC LABEL */}
-      <div className="flex items-center gap-2 px-4 font-semibold whitespace-nowrap border-r border-white/30">
+      <div className="hidden md:flex items-center gap-2 px-4 font-semibold whitespace-nowrap border-r border-white/30">
         {"\u{1F4E2}"} <span>ANNOUNCEMENTS</span>
       </div>
 

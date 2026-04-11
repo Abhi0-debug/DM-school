@@ -100,6 +100,9 @@ export function Hero({ initialSlides }: HeroProps) {
           {slides.map((slide, index) => (
             <button
               key={slide.id}
+              type="button"
+              aria-label={`Show slide ${index + 1}: ${slide.alt}`}
+              aria-pressed={index === activeIndex}
               className={`h-2.5 rounded-full ${
                 index === activeIndex ? "w-7 bg-white" : "w-2.5 bg-white/50"
               }`}

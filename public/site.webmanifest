@@ -1,0 +1,29 @@
+{
+  "name": "D.M Public School, Puri",
+  "short_name": "DMPS Puri",
+  "description": "Official website of D.M Public School, Puri, Odisha.",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png?v=20260411.2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/android-chrome-512x512.png?v=20260411.2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png?v=20260411.2",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#2f79f7",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}

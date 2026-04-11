@@ -36,18 +36,22 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed left-0 w-full z-50 transition-all duration-300 ${
+      className={`fixed left-0 w-full z-50 relative before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-3 before:bg-white/98 transition-all duration-300 ${
         scrolled ? "top-0" : "top-[48px]"
       } ${
         scrolled
-          ? "bg-white/90 supports-[backdrop-filter]:bg-white/80 backdrop-blur-xl backdrop-saturate-150 shadow-md border-b border-slate-200/60"
-          : "bg-white/80 supports-[backdrop-filter]:bg-white/60 backdrop-blur-xl backdrop-saturate-150 border-b border-white/40"
+          ? "overflow-hidden border-b border-slate-200/70 bg-white/96 supports-[backdrop-filter]:bg-white/88 backdrop-blur-xl shadow-[0_14px_38px_rgba(15,23,42,0.16)]"
+          : "overflow-hidden border-b border-white/55 bg-white/86 supports-[backdrop-filter]:bg-white/62 backdrop-blur-2xl shadow-[0_10px_30px_rgba(15,23,42,0.14)]"
       }`}
     >
-      <div className="section-shell flex items-center justify-between py-3">
+      <div className="section-shell relative flex items-center justify-between py-3">
 
         {/* 🔹 LEFT LOGO */}
-        <Link href="#home" className="flex items-center gap-2">
+        <Link
+          href="#home"
+          className="flex items-center gap-2"
+          aria-label="Go to home section"
+        >
           <Logo compact mode="dark" size={32} />
           <span className="font-semibold text-sm text-slate-900">
             D.M Public School
@@ -55,15 +59,18 @@ export function Navbar() {
         </Link>
 
         {/* 🔹 CENTER NAV */}
-        <nav className="hidden md:flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full shadow-lg">
+        <nav
+          aria-label="Primary navigation"
+          className="hidden md:flex items-center gap-2 rounded-full border border-white/70 bg-white/82 px-4 py-1 shadow-[0_8px_24px_rgba(15,23,42,0.14)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/60"
+        >
           {navigationLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ease-out ${
                 activeLink === link.href
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-700 hover:bg-slate-200"
+                  ? "bg-blue-600 text-white shadow-[0_6px_14px_rgba(37,99,235,0.4)]"
+                  : "text-slate-700 hover:bg-white hover:text-slate-900"
               }`}
             >
               {link.label}
@@ -74,8 +81,10 @@ export function Navbar() {
         {/* 🔹 RIGHT ACTIONS */}
         <div className="hidden lg:flex items-center gap-3">
           <button
+            type="button"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-10 w-10 flex items-center justify-center rounded-full border border-slate-200 bg-white hover:bg-slate-100 shadow-sm"
+            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+            className="h-10 w-10 flex items-center justify-center rounded-full border border-white/70 bg-white/85 text-slate-800 shadow-[0_6px_16px_rgba(15,23,42,0.12)] backdrop-blur-md transition duration-200 ease-out hover:bg-white supports-[backdrop-filter]:bg-white/60"
           >
             {theme === "dark" ? (
               <Sun className="h-4 w-4" />
@@ -86,7 +95,7 @@ export function Navbar() {
 
           <Link
             href="/admin"
-            className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-700 shadow-sm"
+            className="rounded-full border border-blue-200/80 bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(37,99,235,0.34)] transition duration-200 ease-out hover:bg-blue-700"
           >
             Admin
           </Link>
@@ -94,8 +103,12 @@ export function Navbar() {
 
         {/* 🔹 MOBILE BUTTON */}
         <button
+          type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="lg:hidden h-10 w-10 flex items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm"
+          aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
+          className="lg:hidden h-10 w-10 flex items-center justify-center rounded-full border border-white/70 bg-white/85 text-slate-800 shadow-[0_6px_16px_rgba(15,23,42,0.12)] backdrop-blur-md transition duration-200 ease-out hover:bg-white supports-[backdrop-filter]:bg-white/60"
         >
           {mobileOpen ? <X /> : <Menu />}
         </button>
@@ -103,13 +116,16 @@ export function Navbar() {
 
       {/* 🔹 MOBILE MENU */}
       {mobileOpen && (
-        <div className="lg:hidden bg-white border-t p-4 space-y-2 shadow-md">
+        <div
+          id="mobile-navigation"
+          className="lg:hidden space-y-2 border-t border-white/70 bg-white/90 p-4 shadow-[0_14px_30px_rgba(15,23,42,0.18)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/72"
+        >
           {navigationLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="block px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800"
+              className="block rounded-lg px-3 py-2 text-slate-800 transition duration-200 ease-out hover:bg-white/85"
             >
               {link.label}
             </Link>
