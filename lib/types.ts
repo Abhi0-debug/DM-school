@@ -1,4 +1,4 @@
-export type NoticeType = "daily" | "holiday" | "alert";
+export type NoticeType = "daily" | "holiday" | "observation";
 export type EventType = "event" | "exam";
 
 export interface HeroSlide {

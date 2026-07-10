@@ -3,6 +3,7 @@ import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { siteConfig } from "@/lib/site-config";
+import { SmoothScroll } from "@/components/smooth-scroll";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -102,7 +103,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${poppins.variable} bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100`}>
+       <SmoothScroll>
         <Providers>{children}</Providers>
+        </SmoothScroll>
       </body>
     </html>
   );

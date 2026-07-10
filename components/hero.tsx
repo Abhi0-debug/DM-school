@@ -15,6 +15,7 @@ interface HeroProps {
 export function Hero({ initialSlides, admissionsText }: HeroProps) {
   const slides = initialSlides;
   const [activeIndex, setActiveIndex] = useState(0);
+  const [activeButton, setActiveButton] = useState<"explore" | "contact">( "explore");
   const bannerText = admissionsText.trim();
   const hasSlides = slides.length > 0;
 
@@ -94,22 +95,29 @@ export function Hero({ initialSlides, admissionsText }: HeroProps) {
           </p>
 
           <div
-            className="mt-10 flex flex-wrap items-center justify-center gap-4 animate-rise-in"
-            style={{ animationDelay: "220ms" }}
-          >
-            <Link
-              href="#gallery"
-              className="inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-blue-700 sm:w-auto"
-            >
+          className="relative mt-10 flex rounded-full border border-white/30 bg-white/10 p-1 backdrop-blur-md animate-rise-in "
+           style={{ animationDelay: "220ms" }}
+           >
+             <div className={` absolute top-1 h-[calc(100%-8px)] w-32 rounded-full bg-blue-600 transition-all duration-300 ease-in-out
+              ${  activeButton === "explore"  ? "left-1": "left-[132px]"   } `}
+              
+            />
+            <Link href="#gallery"
+              onMouseEnter={() => setActiveButton("explore")}
+              className=" relative z-10 flex h-12 w-32 items-center justify-center rounded-full text-s font-semibold text-white " >
+                
               Explore
-            </Link>
-            <Link
-              href="#contact"
-              className="inline-flex min-h-[44px] w-full items-center justify-center rounded-full border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all duration-300 hover:scale-105 hover:bg-white/20 sm:w-auto"
-            >
-              Contact
-            </Link>
-          </div>
+               </Link>
+              
+               <Link
+                href="#contact"
+                onMouseEnter={() => setActiveButton("contact")}
+                className="relative  z-10 flex h-12 w-32 items-center justify-center rounded-full text-sm font-semibold text-white "
+                >
+               Contact
+                </Link>
+                
+            </div>  
         </div>
 
         <div className="mt-12 flex items-center justify-center gap-2">
