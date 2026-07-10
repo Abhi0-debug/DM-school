@@ -21,13 +21,14 @@ import {
   NoticeBoardSkeleton,
   StaffSkeleton
 } from "@/components/section-skeletons";
-
+import { AnnouncementBar } from "@/components/announcement-bar";
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {
   return (
     <>
       <Navbar />
+      <AnnouncementBar />
       <main id="main-content" aria-label="DM Public School Puri homepage">
         <Suspense fallback={<HeroSkeleton />}>
           <HeroSectionContent />
