@@ -15,6 +15,8 @@ interface HeroProps {
 export function Hero({ initialSlides }: HeroProps) {
   const slides = initialSlides;
   const [activeIndex, setActiveIndex] = useState(0);
+  const [activeButton, setActiveButton] = useState<"explore" | "contact">( "explore");
+  // const bannerText = admissionsText.trim();
   const hasSlides = slides.length > 0;
 
   useEffect(() => {
@@ -77,22 +79,30 @@ export function Hero({ initialSlides }: HeroProps) {
             {siteConfig.tagline}
           </p>
 
-          {/* BUTTONS */}
-          <div className="mt-10 flex gap-4">
-            <Link
-              href="#gallery"
-              className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:scale-105 hover:bg-blue-700 transition"
-            >
+          <div
+          className="relative mt-10 flex rounded-full border border-white/30 bg-white/10 p-1 backdrop-blur-md animate-rise-in "
+           style={{ animationDelay: "220ms" }}
+           >
+             <div className={` absolute top-1 h-[calc(100%-8px)] w-32 rounded-full bg-blue-600 transition-all duration-300 ease-in-out
+              ${  activeButton === "explore"  ? "left-1": "left-[132px]"   } `}
+              
+            />
+            <Link href="#gallery"
+              onMouseEnter={() => setActiveButton("explore")}
+              className=" relative z-10 flex h-12 w-32 items-center justify-center rounded-full text-s font-semibold text-white " >
+                
               Explore
-            </Link>
-
-            <Link
-              href="#contact"
-              className="rounded-full border border-white/40 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md hover:scale-105 hover:bg-white/20 transition"
-            >
-              Contact
-            </Link>
-          </div>
+               </Link>
+              
+               <Link
+                href="#contact"
+                onMouseEnter={() => setActiveButton("contact")}
+                className="relative  z-10 flex h-12 w-32 items-center justify-center rounded-full text-sm font-semibold text-white "
+                >
+               Contact
+                </Link>
+                
+            </div>  
         </div>
 
         {/* DOTS */}

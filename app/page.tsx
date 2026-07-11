@@ -22,9 +22,8 @@ import {
   StaffSkeleton
 } from "@/components/section-skeletons";
 import { AnnouncementBar } from "@/components/announcement-bar";
-import { siteConfig } from "@/lib/site-config";
-
 export const dynamic = "force-dynamic";
+import { siteConfig } from "@/lib/site-config";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(
   /\/+$/,
@@ -63,38 +62,8 @@ export default function HomePage() {
       />
       <AnnouncementBar />
       <Navbar />
-
-      {/* ✅ UPDATED BANNER
-      <AdmissionBanner
-        banners={[
-          {
-            id: 1,
-            imageUrl: "/images/admission-banner.jpg",
-            title: "Admissions Open 2025–26",
-            subtitle: "Secure your child’s future with quality education",
-          },
-          {
-            id: 2,
-            imageUrl: "/images/banner2.jpg",
-            title: "New Academic Session",
-            subtitle: "Enroll today and start your journey",
-          },
-          {
-            id: 3,
-            imageUrl: "/images/banner3.jpg",
-            title: "Modern Learning Environment",
-            subtitle: "Smart classrooms & holistic development",
-          },
-          {
-            id: 4,
-            imageUrl: "/images/banner4.jpg",
-            title: "Limited Seats Available",
-            subtitle: "Apply now before it’s too late",
-          },
-        ]}
-      /> */}
-
-      <main id="main-content" aria-label="D.M Public School Puri homepage">
+      <AnnouncementBar />
+      <main id="main-content" aria-label="DM Public School Puri homepage">
         <Suspense fallback={<HeroSkeleton />}>
           <HeroSectionContent />
         </Suspense>

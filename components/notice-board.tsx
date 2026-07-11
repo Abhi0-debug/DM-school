@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, Bell, Calendar, SunMedium } from "lucide-react";
+import {Bell, Calendar, SunMedium, Eye } from "lucide-react";
 import { SectionHeading } from "@/components/section-heading";
 import { NoticeItem, NoticeType } from "@/lib/types";
 import { formatDate } from "@/lib/format";
@@ -9,14 +9,14 @@ import { formatDate } from "@/lib/format";
 const noticeTypeClasses: Record<NoticeType, string> = {
   daily: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/25 dark:text-blue-200 dark:border-blue-800",
   holiday: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-200 dark:border-emerald-800",
-  alert: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-200 dark:border-rose-800"
+  observation: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-200 dark:border-purple-800",
 };
 
 const noticeTabs: Array<{ key: "all" | NoticeType; label: string }> = [
   { key: "all", label: "All" },
   { key: "daily", label: "Daily" },
   { key: "holiday", label: "Holidays" },
-  { key: "alert", label: "Alerts" }
+  { key: "observation", label: "Observation Days" }
 ];
 
 interface NoticeBoardProps {
@@ -26,8 +26,24 @@ interface NoticeBoardProps {
 export function NoticeBoard({ initialNotices }: NoticeBoardProps) {
   const [tab, setTab] = useState<"all" | NoticeType>("all");
 
-  const filtered = useMemo(() => {
-    const sorted = [...initialNotices].sort((a, b) => +new Date(b.date) - +new Date(a.date));
+ const filtered = useMemo(() => {
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const activeNotices = initialNotices.filter((notice)=>{
+
+      const noticeDate = new Date(notice.date);
+      noticeDate.setHours(0,0,0,0);
+
+      return noticeDate >= today;
+
+    });
+
+
+    const sorted = [...activeNotices].sort(
+      (a,b)=> +new Date(a.date) - +new Date(b.date)
+    );
     if (tab === "all") {
       return sorted;
     }
@@ -83,7 +99,7 @@ export function NoticeBoard({ initialNotices }: NoticeBoardProps) {
                   ) : notice.type === "holiday" ? (
                     <Calendar className="h-3.5 w-3.5" />
                   ) : (
-                    <AlertTriangle className="h-3.5 w-3.5" />
+                    <Eye className="h-3.5 w-3.5" />
                   )}
                   {notice.type}
                 </span>

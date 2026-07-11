@@ -35,23 +35,16 @@ export function Navbar() {
   }, []);
 
   return (
-    <header
-      className={`fixed left-0 w-full z-50 relative before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-3 before:bg-white/98 transition-all duration-300 ${
-        scrolled ? "top-0" : "top-[48px]"
-      } ${
-        scrolled
-          ? "overflow-hidden border-b border-slate-200/70 bg-white/96 supports-[backdrop-filter]:bg-white/88 backdrop-blur-xl shadow-[0_14px_38px_rgba(15,23,42,0.16)]"
-          : "overflow-hidden border-b border-white/55 bg-white/86 supports-[backdrop-filter]:bg-white/62 backdrop-blur-2xl shadow-[0_10px_30px_rgba(15,23,42,0.14)]"
-      }`}
-    >
-      <div className="section-shell relative flex items-center justify-between py-3">
-
-        {/* 🔹 LEFT LOGO */}
-        <Link
-          href="#home"
-          className="flex items-center gap-2"
-          aria-label="Go to home section"
+    <header className="fixed inset-x-0 top-12 z-50 py-4 transition-all duration-300">
+      <div className="section-shell">
+        <div
+          className={`flex items-center justify-between gap-2 rounded-2xl border px-3 py-2 shadow-xl backdrop-blur-lg transition-all duration-300 sm:gap-4 sm:px-4 ${
+            scrolled
+              ? "border-slate-200/80 bg-white/85"
+              : "border-white/20 bg-white/20"
+          }`}
         >
+        <Link href="/" className="flex items-center gap-3">
           <Logo compact mode="dark" size={32} />
           <span className="font-semibold text-sm text-slate-900">
             D.M Public School
@@ -132,6 +125,7 @@ export function Navbar() {
           ))}
         </div>
       )}
+      </div>
     </header>
   );
 }
