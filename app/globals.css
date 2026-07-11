@@ -59,22 +59,18 @@ h4 {
   }
 }
 
-/* Swiper fix */
-.swiper-slide {
-  display: flex;
-  height: auto;
-}
-
 @keyframes marquee {
-  0% {
+  from {
     transform: translateX(0%);
   }
-  100% {
-    transform: translateX(-100%);
+
+  to {
+    transform: translateX(-33.333%);
   }
 }
 
 .animate-marquee {
-  will-change: transform;
-  animation: marquee 20s linear infinite;
+  width: max-content;
+  display: flex;
+  animation: marquee 25s linear infinite;
 }

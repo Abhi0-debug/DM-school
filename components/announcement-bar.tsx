@@ -8,7 +8,7 @@ interface ActiveAnnouncement {
 }
 
 const FALLBACK_TEXT =
-  "GENERAL SCIENCE AND SPARK ENGINEERING ARE PUBLISHED NOW!! \u2022 SECOND LIST (UNIT-1) FOR GENERAL SCIENCE AND SPARK ENGINEERING IS OUT NOW!!";
+  "Admissions Open for 2026 - 2027 • Welcome to D.M. Public School •";
 
 function hasSameAnnouncements(
   previous: ActiveAnnouncement[],
@@ -19,16 +19,18 @@ function hasSameAnnouncements(
   }
 
   return previous.every(
-    (item, index) => item.id === next[index]?.id && item.text === next[index]?.text
+    (item, index) => 
+      item.id === next[index]?.id && 
+      item.text === next[index]?.text
   );
 }
 
 export function AnnouncementBar() {
   const [announcements, setAnnouncements] = useState<ActiveAnnouncement[]>([]);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
-    let mounted = true;
 
     const loadAnnouncements = async () => {
       try {
@@ -41,18 +43,14 @@ export function AnnouncementBar() {
           return;
         }
 
-        const payload = (await response.json()) as {
-          announcements?: ActiveAnnouncement[];
-        };
-
-        if (!mounted) {
-          return;
-        }
+        const payload = await response.json();
 
         const next = (payload.announcements ?? [])
-          .filter((item) => typeof item.text === "string")
-          .map((item) => ({ id: item.id, text: item.text.trim() }))
-          .filter((item) => item.text.length > 0);
+          .filter((item: ActiveAnnouncement) => item.text)
+          .map((item: ActiveAnnouncement) => ({ 
+            id: item.id, 
+            text: item.text.trim() 
+          }));
 
         setAnnouncements((current) =>
           hasSameAnnouncements(current, next) ? current : next
@@ -63,42 +61,75 @@ export function AnnouncementBar() {
     };
 
     void loadAnnouncements();
+    const interval = setInterval(loadAnnouncements, 60000);
 
     return () => {
-      mounted = false;
       controller.abort();
+      clearInterval(interval)
     };
   }, []);
 
+  // Hide on scroll down
+  useEffect(() => {
+    let lastScroll = 0;
+
+    const handleScroll = () => {
+      const current = window.scrollY;
+
+      if (current > lastScroll && current > 80) {
+        setHidden(true);
+      } else {
+        setHidden(false);
+      }
+
+      lastScroll = current;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const text = useMemo(() => {
-    const merged = announcements.map((item) => item.text).join(" \u2022 ");
-    return merged.length > 0 ? merged : FALLBACK_TEXT;
+    if (!announcements.length) return FALLBACK_TEXT;
+
+    return announcements.map((a) => a.text).join(" ◆ ") + " ◆ ";
   }, [announcements]);
 
-  const loopText = useMemo(() => {
-    return text.endsWith(" \u2022") ? text : `${text} \u2022`;
-  }, [text]);
-
   return (
-    <div className="fixed top-0 left-0 w-full z-40 bg-green-600 text-white h-12 flex items-center overflow-hidden">
-      {/* LEFT STATIC LABEL */}
-      <div className="hidden md:flex items-center gap-2 px-4 font-semibold whitespace-nowrap border-r border-white/30">
-        {"\u{1F4E2}"} <span>ANNOUNCEMENTS</span>
-      </div>
+    <div
+      className={`fixed top-0 left-0 z-50 w-full h-12 bg-slate-900 text-white overflow-hidden transition-transform duration-300 ${
+        hidden ? "-translate-y-full" : "translate-y-0"
+      }`}
+    >
+      <div className="flex h-full items-center group">
 
-      {/* SCROLLING TEXT */}
-      <div className="relative flex-1 overflow-hidden">
-        <div className="flex whitespace-nowrap text-sm">
-          <span className="shrink-0 min-w-full px-4 animate-marquee">
-            {loopText}
-          </span>
-          <span
-            aria-hidden="true"
-            className="shrink-0 min-w-full px-4 animate-marquee"
-          >
-            {loopText}
-          </span>
+        {/* Label */}
+
+        <div className="hidden md:flex items-center px-5 font-semibold border-r border-white/20 whitespace-nowrap">
+          📢 ANNOUNCEMENTS
         </div>
+
+        {/* Marquee */}
+
+        <div className="relative flex-1 overflow-hidden">
+
+          <div className="flex whitespace-nowrap animate-marquee group-hover:[animation-play-state:paused]">
+
+            <span className="px-6">{text}</span>
+
+            <span className="px-6" aria-hidden="true">
+              {text}
+            </span>
+
+            <span className="px-6" aria-hidden="true">
+              {text}
+            </span>
+
+          </div>
+
+        </div>
+
       </div>
     </div>
   );
