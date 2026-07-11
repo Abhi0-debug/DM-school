@@ -36,7 +36,7 @@ export const noticeSchema = z.object({
   title: z.string().min(3),
   content: z.string().min(8),
   date: z.string().min(8),
-  type: z.enum(["daily", "holiday", "alert"])
+  type: z.enum(["daily", "holiday", "observation"])
 });
 
 export const announcementCreateSchema = z.object({
