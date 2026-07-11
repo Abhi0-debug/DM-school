@@ -1,17 +1,28 @@
+import { NavbarSkeleton } from "@/components/navbar-skeleton";
+import { AnnouncementBarSkeleton } from "@/components/announcement-bar-skeleton";
 import {
-  EventsSkeleton,
-  GallerySkeleton,
   HeroSkeleton,
-  NoticeBoardSkeleton
+  GallerySkeleton,
+  EventsSkeleton,
+  NoticeBoardSkeleton,
+  StaffSkeleton,
+  DownloadsSkeleton,
 } from "@/components/section-skeletons";
 
 export default function Loading() {
   return (
-    <main>
-      <HeroSkeleton />
-      <GallerySkeleton />
-      <EventsSkeleton />
-      <NoticeBoardSkeleton />
-    </main>
+    <>
+      <AnnouncementBarSkeleton />
+      <NavbarSkeleton />
+
+      <main>
+        <HeroSkeleton />
+        <GallerySkeleton />
+        <EventsSkeleton />
+        <NoticeBoardSkeleton />
+        <StaffSkeleton />
+        <DownloadsSkeleton />
+      </main>
+    </>
   );
 }

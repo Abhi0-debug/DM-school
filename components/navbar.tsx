@@ -37,7 +37,7 @@ export function Navbar() {
   }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 py-4 transition-all duration-300">
+    <header className="fixed inset-x-0 top-12 z-50 py-4 transition-all duration-300">
       <div className="section-shell">
         <div
           className={`flex items-center justify-between gap-2 rounded-2xl border px-3 py-2 shadow-xl backdrop-blur-lg transition-all duration-300 sm:gap-4 sm:px-4 ${
