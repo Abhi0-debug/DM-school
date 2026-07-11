@@ -1703,7 +1703,7 @@ export function AdminPanel() {
                   >
                     <option value="daily">Daily</option>
                     <option value="holiday">Holiday</option>
-                    <option value="alert">Important</option>
+                    <option value="observation">Observation</option>
                   </select>
                   <button
                     type="submit"
@@ -1824,7 +1824,7 @@ export function AdminPanel() {
                                 >
                                   <option value="daily">Daily</option>
                                   <option value="holiday">Holiday</option>
-                                  <option value="alert">Important</option>
+                                  <option value="observation">Observation</option>
                                 </select>
                                 <textarea
                                   rows={3}
