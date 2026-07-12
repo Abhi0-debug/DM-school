@@ -22,28 +22,67 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").re
   /\/+$/,
   ""
 );
-const homeTitle = "D.M. Public School Puri | Admissions Open 2026";
+const faviconVersion = "20260411.2";
+const defaultTitle = "D.M Public School, Puri";
+const homeTitle = `${defaultTitle} | Admissions Open 2026`;
 const ogImagePath = "/images/New Building.jpeg";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: homeTitle,
-    template: "%s | D.M. Public School Puri"
+    default: defaultTitle,
+    template: "%s | D.M Public School, Puri"
   },
-  applicationName: "D.M. Public School Puri",
+  applicationName: defaultTitle,
+  manifest: `/site.webmanifest?v=${faviconVersion}`,
+  formatDetection: {
+    telephone: false,
+    address: false,
+    email: false
+  },
   alternates: {
     canonical: "/"
   },
   icons: {
-    icon: "/CICA LOGO 3.png",
-    shortcut: "/CICA LOGO 3.png",
-    apple: "/CICA LOGO 3.png"
+    icon: [
+      { url: `/favicon.ico?v=${faviconVersion}`, sizes: "any", type: "image/x-icon" },
+      {
+        url: `/favicon-32x32.png?v=${faviconVersion}`,
+        type: "image/png",
+        sizes: "32x32"
+      },
+      {
+        url: `/favicon-16x16.png?v=${faviconVersion}`,
+        type: "image/png",
+        sizes: "16x16"
+      }
+    ],
+    shortcut: `/favicon.ico?v=${faviconVersion}`,
+    apple: [
+      {
+        url: `/apple-touch-icon.png?v=${faviconVersion}`,
+        type: "image/png",
+        sizes: "180x180"
+      }
+    ]
   },
   description: siteConfig.description,
+  keywords: [
+    "D.M Public School, Puri",
+    "DM Public School Puri",
+    "School in Puri Odisha",
+    "CBSE school in Puri",
+    "Best school in Puri",
+    "Admissions Open 2026",
+    "Odisha school admissions"
+  ],
+  authors: [{ name: "D.M Public School" }],
+  creator: "D.M Public School",
+  publisher: "D.M Public School",
   robots: {
     index: true,
     follow: true,
+    nocache: false,
     googleBot: {
       index: true,
       follow: true,
@@ -56,7 +95,7 @@ export const metadata: Metadata = {
     title: homeTitle,
     description: siteConfig.description,
     url: "/",
-    siteName: "DM Public School Puri",
+    siteName: defaultTitle,
     locale: "en_IN",
     type: "website",
     images: [
@@ -74,18 +113,11 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     images: [ogImagePath]
   },
-  keywords: [
-    "DM Public School Puri",
-    "School in Puri Odisha",
-    "Admissions Open 2026",
-    "Best school in Puri",
-    "CBSE school in Puri",
-    "DM Public School admissions"
-  ],
   category: "education",
   other: {
     "geo.region": "IN-OR",
-    "geo.placename": "Puri, Odisha"
+    "geo.placename": "Puri, Odisha",
+    "geo.position": "19.806225628641517;85.82680267595559"
   }
 };
 
@@ -101,7 +133,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en-IN" suppressHydrationWarning>
       <body className={`${inter.variable} ${poppins.variable} bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100`}>
        <SmoothScroll>
         <Providers>{children}</Providers>

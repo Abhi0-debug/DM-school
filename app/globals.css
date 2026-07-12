@@ -58,3 +58,19 @@ h4 {
     scroll-behavior: auto !important;
   }
 }
+
+@keyframes marquee {
+  from {
+    transform: translateX(0%);
+  }
+
+  to {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-marquee {
+  width: max-content;
+  display: flex;
+  animation: marquee 25s linear infinite;
+}

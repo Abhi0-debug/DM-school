@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   Loader2,
   LogOut,
+  Megaphone,
   MapPin,
   Menu,
   Pencil,
@@ -60,14 +61,18 @@ import {
 } from "@/lib/types";
 import { AdminStaffManager } from "@/components/admin-staff-manager";
 import { AdminDocumentsManager } from "@/components/admin-documents-manager";
+import { AdminAnnouncementsManager } from "@/components/admin-announcements-manager";
+
 
 type SectionKey =
   | "overview"
   | "events"
   | "notices"
+  | "announcements"
   | "gallery"
   | "documents"
   | "staff"
+  | "popup"
   | "settings";
 type ToastType = "success" | "error";
 
@@ -124,12 +129,15 @@ const sidebarItems: Array<{
   icon: LucideIcon;
 }> = [
   { key: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
+  { key: "popup", label:"Event Popup", icon: ImageIcon},
   { key: "events", label: "Events", icon: CalendarDays },
   { key: "notices", label: "Notices", icon: Bell },
+  { key: "announcements", label: "Announcements", icon: Megaphone },
   { key: "gallery", label: "Gallery", icon: ImageIcon },
   { key: "documents", label: "Documents", icon: FileText },
   { key: "staff", label: "Staff", icon: Shield },
   { key: "settings", label: "Settings", icon: Settings }
+  
 ];
 
 const noticeTypeStyles: Record<NoticeType, string> = {
@@ -247,6 +255,8 @@ function SortableImageCard({
 }
 
 export function AdminPanel() {
+  const [popupImage, setPopupImage] = useState("");
+  const [popupActive, setPopupActive] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [pin, setPin] = useState("");
@@ -1228,6 +1238,7 @@ export function AdminPanel() {
         </aside>
 
         <div className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto w-full max-w-6xl">
           <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <h1 className="break-words text-xl font-semibold text-slate-900 sm:text-2xl dark:text-slate-100">
@@ -1300,6 +1311,13 @@ export function AdminPanel() {
                     className="min-h-[44px] rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
                   >
                     Add Notice
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSection("announcements")}
+                    className="min-h-[44px] rounded-full bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700"
+                  >
+                    Add Announcement
                   </button>
                   <button
                     type="button"
@@ -1685,7 +1703,7 @@ export function AdminPanel() {
                   >
                     <option value="daily">Daily</option>
                     <option value="holiday">Holiday</option>
-                    <option value="alert">Important</option>
+                    <option value="observation">Observation</option>
                   </select>
                   <button
                     type="submit"
@@ -1806,7 +1824,7 @@ export function AdminPanel() {
                                 >
                                   <option value="daily">Daily</option>
                                   <option value="holiday">Holiday</option>
-                                  <option value="alert">Important</option>
+                                  <option value="observation">Observation</option>
                                 </select>
                                 <textarea
                                   rows={3}
@@ -1852,9 +1870,16 @@ export function AdminPanel() {
               )}
             </div>
           ) : null}
+          {activeSection === "announcements" ? (
+            <AdminAnnouncementsManager
+              apiRequest={apiRequest}
+              addToast={addToast}
+              requestConfirm={requestConfirm}
+            />
+          ) : null}
           {activeSection === "gallery" ? (
             <div className="space-y-6">
-              <div className="max-w-xl rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   Gallery Presentation Mode
                 </h3>
@@ -2125,6 +2150,41 @@ export function AdminPanel() {
             </div>
           ) : null}
 
+          {activeSection === "popup" ? (
+  <div className="space-y-6 ">
+    <div className="rounded-xl border p-5 bg-white dark:bg-slate-900">
+      <h3 className="text-lg font-semibold mb-3">Event Popup</h3>
+
+      <input
+        type="text"
+        placeholder="Enter image URL"
+        value={popupImage}
+        onChange={(e) => setPopupImage(e.target.value)}
+        className="w-full mb-3 p-2 border rounded"
+      />
+
+      <label className="flex items-center gap-2 mb-3">
+        <input
+          type="checkbox"
+          checked={popupActive}
+          onChange={(e) => setPopupActive(e.target.checked)}
+        />
+        Enable Popup
+      </label>
+
+      <button
+        onClick={() => {
+          addToast("success", "Popup saved (UI only)");
+          console.log({ popupImage, popupActive });
+        }}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Save Popup
+      </button>
+    </div>
+  </div>
+) : null}
+
           {activeSection === "staff" ? (
             <AdminStaffManager
               apiRequest={apiRequest}
@@ -2145,7 +2205,7 @@ export function AdminPanel() {
             <div className="space-y-6">
               <form
                 onSubmit={changePin}
-                className="max-w-xl rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900"
+                className="rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900"
               >
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   Change Admin PIN
@@ -2197,7 +2257,7 @@ export function AdminPanel() {
 
               <form
                 onSubmit={saveHeroAdmissionsText}
-                className="max-w-xl rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900"
+                className="rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900"
               >
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   Hero Admissions Badge
@@ -2232,7 +2292,7 @@ export function AdminPanel() {
                 </button>
               </form>
 
-              <div className="max-w-xl rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   Gallery Presentation Mode
                 </h3>
@@ -2277,7 +2337,7 @@ export function AdminPanel() {
                 </button>
               </div>
 
-              <div className="max-w-xl rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-md dark:border-slate-700 dark:bg-slate-900">
                 <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                   Session
                 </h3>
@@ -2359,6 +2419,7 @@ export function AdminPanel() {
             </button>
           </div>
         ))}
+      </div>
       </div>
     </section>
   );

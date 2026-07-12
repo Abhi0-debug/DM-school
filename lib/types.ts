@@ -49,6 +49,13 @@ export interface NoticeItem {
   createdAt?: string;
 }
 
+export interface AnnouncementItem {
+  id: string;
+  text: string;
+  isActive: boolean;
+  createdAt?: string;
+}
+
 export interface StaffMember {
   id: string;
   name: string;

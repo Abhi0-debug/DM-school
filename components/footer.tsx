@@ -117,7 +117,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 flex flex-col gap-3 border-t border-slate-200 pt-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:text-slate-400">
-          <p>© {new Date().getFullYear()} D.M. Public School. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} D.M Public School. All rights reserved.</p>
           <p className="inline-flex items-start gap-1.5 break-words sm:max-w-[60%]">
             <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>{siteConfig.contact.address}</span>
@@ -127,3 +127,4 @@ export function Footer() {
     </footer>
   );
 }
+

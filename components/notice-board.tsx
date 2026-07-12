@@ -58,7 +58,7 @@ export function NoticeBoard({ initialNotices }: NoticeBoardProps) {
     >
       <SectionHeading
         title="Notice Board"
-        subtitle="Daily Updates, Holidays & Important Alerts"
+        subtitle="Daily Updates, Holidays & Observation Alerts"
         headingId="notices-heading"
       />
 

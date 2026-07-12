@@ -123,6 +123,7 @@ export function Gallery({ initialImages, externalImageId }: GalleryProps) {
             key={image.id}
             type="button"
             onClick={() => openCategoryImages(image)}
+            aria-label={`Open gallery image: ${getGalleryAltText(image)}`}
             className={`group relative min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 text-left shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-slate-700 dark:bg-slate-800 ${
               index === 0 || index === 5
                 ? "sm:col-span-2 sm:row-span-2"

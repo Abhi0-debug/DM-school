@@ -16,6 +16,8 @@ export function StaffSection({ initialMembers }: StaffSectionProps){
   const[ selectedStaff, setSelectedStaff ] = useState<StaffMember  | null>(null);
   
 
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   return (
     <section
       id="staff"
@@ -239,4 +241,3 @@ dark:text-slate-300
     </section>
   );
 }
-
