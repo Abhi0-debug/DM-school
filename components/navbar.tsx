@@ -44,7 +44,7 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-[48px] z-50 px-3 sm:px-5">
       <div className="mx-auto max-w-7xl">
         <div
-          className={`flex items-center justify-between rounded-2xl border px-4 py-3 backdrop-blur-xl transition-all duration-300 ${
+          className={`flex items-center justify-between rounded-2xl border px-3 sm:px-4 py-3 backdrop-blur-xl transition-all duration-300 ${
             scrolled
               ? "border-slate-200 bg-white/90 shadow-xl"
               : "border-white/30 bg-white/50 shadow-lg"
@@ -55,7 +55,7 @@ export function Navbar() {
           <Link href="/" className="flex items-center gap-3 shrink-0">
             <Logo compact mode="dark" size={34} />
 
-            <span className="hidden sm:block font-semibold text-slate-900">
+            <span className="font-semibold text-slate-900 text-sm sm:text-base">
               D.M Public School
             </span>
           </Link>
@@ -80,12 +80,12 @@ export function Navbar() {
 
           {/* Right */}
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <button
               onClick={() =>
                 setTheme(theme === "dark" ? "light" : "dark")
               }
-              className="flex h-10 w-10 items-center justify-center rounded-full border bg-white/80 hover:bg-white"
+              className="flex h-10 w-10 items-center justify-center rounded-full border bg-white/80 text-slate-700 hover:bg-white dark:bg-slate-800 dark:text-white"
             >
               {theme === "dark" ? (
                 <Sun className="h-4 w-4" />
@@ -103,7 +103,7 @@ export function Navbar() {
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="flex h-10 w-10 items-center justify-center rounded-full border bg-white/80 md:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full border bg-white/80 text-slate-700 hover:bg-white dark:bg-slate-800 dark:text-white md:hidden"
             >
               {mobileOpen ? (
                 <X className="h-5 w-5" />
