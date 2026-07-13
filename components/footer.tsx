@@ -35,14 +35,28 @@ export function Footer() {
             </div>
 
             <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-              <p className="inline-flex items-start gap-2 break-words">
-                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                <span>{siteConfig.contact.email}</span>
-              </p>
-              <p className="inline-flex items-start gap-2 break-words">
-                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                <span>{siteConfig.contact.phone}</span>
-              </p>
+             <a
+             href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+             siteConfig.contact.email
+             )}&su=${encodeURIComponent("Inquiry from DM Public School Website")}`}
+             target="_blank"
+             rel="noopener noreferrer"
+             
+             className="inline-flex items-start gap-2 break-words transition-colors hover:text-brand-600 hover:underline"
+             aria-label={`Email ${siteConfig.name}`}
+            >
+             <Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+             <span>{siteConfig.contact.email}</span>
+             </a>
+
+              <a
+              href={`tel:${siteConfig.contact.phone.replace(/\D/g, "")}`}
+              className="inline-flex items-start gap-2 break-words transition-colors hover:text-brand-600 hover:underline"
+              aria-label={`Call ${siteConfig.name}`}
+              >
+              <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+              <span>{siteConfig.contact.phone}</span>
+              </a>
             </div>
           </div>
 

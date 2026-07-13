@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { StaffMember } from "@/lib/types";
 import { SectionHeading } from "@/components/section-heading";
-import { motion } from "framer-motion";
+import { InfiniteCarousel } from "@/components/InfiniteCarousel";
 
 interface StaffSectionProps {
   initialMembers?: StaffMember[];
@@ -30,25 +30,12 @@ export function StaffSection({ initialMembers }: StaffSectionProps){
         headingId="staff-heading"
       />
 
-      <div className="mt-8 overflow-hidden">
-
-  <motion.div
-    className="flex gap-6 w-max"
-    animate={{
-      x: ["0%", "-50%"],
-    }}
-    transition={{
-      duration: 40,
-      repeat: Infinity,
-      ease: "linear",
-    }}
-  >
-
-    {[...members, ...members].map((member, index) => {
+      <InfiniteCarousel className="mt-8" speed={0.45}>
+    {members.map((member, index) => {
 
       const cardContent = (
         <>
-          <div className="relative h-52 shrink-0 overflow-hidden rounded-t-2xl bg-slate-100">
+          <div className="relative h-56 sm:h-52 shrink-0 overflow-hidden rounded-t-2xl bg-slate-100">
             <Image
               src={member.photo}
               alt={`${member.name}, ${member.subject} teacher at DM Public School Puri`}
@@ -62,7 +49,7 @@ export function StaffSection({ initialMembers }: StaffSectionProps){
           </div>
 
 
-          <div className="flex flex-1 flex-col p-3">
+          <div className="flex flex-1 flex-col p-4 sm:p-3">
 
             <h3 className=" line-clamp-2 min-h-[48px] break-words text-[clamp(14px,1vw,18px)] font-bold leading-tight text-slate-900 dark:text-slate-100 ">
               {member.name}
@@ -107,8 +94,7 @@ export function StaffSection({ initialMembers }: StaffSectionProps){
 
 
       const cardClassName =
-        "group flex h-[430px] w-[260px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-900";
-
+        "group shrink-0 flex h-[430px] w-[85vw] max-w-[300px] sm:w-[260px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1 dark:border-slate-700 dark:bg-slate-900";
 
       if (member.pdfUrl) {
 
@@ -146,10 +132,7 @@ export function StaffSection({ initialMembers }: StaffSectionProps){
 
     })}
 
-  </motion.div>
-
-</div>
-
+</InfiniteCarousel>
 
 
 
@@ -170,14 +153,7 @@ p-4
 
 
 <div
-className="
-max-w-lg
-rounded-3xl
-bg-white
-p-6
-shadow-2xl
-dark:bg-slate-900
-"
+className="w-full max-w-lg rounded-3xl bg-white p-5 sm:p-6"
 >
 
 
@@ -191,13 +167,7 @@ width={300}
 
 height={300}
 
-className="
-mx-auto
-h-40
-w-40
-rounded-full
-object-cover
-"
+className="mx-auto h-32 w-32 sm:h-40 sm:w-40 rounded-full object-cover"
 
 />
 
@@ -250,26 +220,14 @@ dark:text-slate-300
 
 
 <button
-
-onClick={()=>
-setSelectedStaff(null)
-}
-
-className="
-mt-6
-w-full
-rounded-xl
-bg-brand-600
-py-2
-text-white
-"
-
+  onClick={() => {
+    setSelectedStaff(null);
+  }}
+  className="mt-6 w-full rounded-xl  bg-brand-600 py-2  text-white"
 >
-
-Close
-
+  
+ Close
 </button>
-
 
 
 </div>
